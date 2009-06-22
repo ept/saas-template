@@ -70,15 +70,21 @@ Edit `config/routes.rb` and add the following:
     # For the top-level site we want the about controller, else we want the customers controller
     #
     # TODO: would be nicer to patch request_routing to interact with subdomain-fu and allow :subdomain => false
-    map.root :controller => "about", :conditions => { :subdomain => nil} # http://localhost/
-    map.root :controller => "about", :conditions => { :subdomain => "go-test"} # http://go-test.it/
+    map.root :controller => "customers", :conditions => { :subdomain => nil} # http://localhost/
+    map.root :controller => "customers", :conditions => { :subdomain => "go-test"} # http://go-test.it/
     map.root :controller => "customers"
 
 
 Edit each of in `config/environments/development.rb` and `production.rb`, adding a line:
 
     ActionController::Base.session_options[:domain] = "go-test.local"   # development.rb
-    ActionController::Base.session_options[:domain] = 'go-test.it'      # production.rb
+    ActionController::Base.session_options[:domain] = "go-test.it"      # production.rb
+
+
+Edit `config/database.yml`: add `&TEST` to the line `test:` and append the following two lines:
+
+    cucumber:
+      <<: *TEST
 
 
 Then continue:
