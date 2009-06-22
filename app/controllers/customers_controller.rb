@@ -28,7 +28,7 @@ class CustomersController < ApplicationController
     @customers = current_user.customers
     if current_customer and CustomerUser.linked?(current_customer, current_user) then
       redirect_to :action => "dashboard", :subdomain => current_customer.subdomain
-    elsif @customers.count == 0 then
+    elsif !@customers or @customers.count == 0 then
       redirect_to :action => "new", :subdomain => false
     elsif @customers.count == 1 then
       redirect_to :action => "dashboard", :subdomain => @customers[0].subdomain
