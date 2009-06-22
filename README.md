@@ -15,9 +15,13 @@ Using this template in your application:
 Resolve any merge conflicts, then do `git commit -a`. Create databases `myapp_development`
 and `myapp_test` (or whatever you called the app), tweak database config if necessary.
 
-Add the following line to `config/environment.rb`:
+Add the following line to `config/environment.rb` in the `Rails::Initializer.run` block:
 
     config.gem "rubyist-aasm", :lib => 'aasm', :source => "http://gems.github.com"
+
+And add the following line right at the end of `config/environment.rb`:
+
+    SubdomainFu.tld_sizes = {:development => 1, :test => 1, :production => 1 }
 
 Edit `config/initializers/site_keys.rb` and change the value for `REST_AUTH_SITE_KEY`
 to something unique and random.
@@ -69,6 +73,12 @@ Edit `config/routes.rb` and add the following:
     map.root :controller => "about", :conditions => { :subdomain => nil} # http://localhost/
     map.root :controller => "about", :conditions => { :subdomain => "go-test"} # http://go-test.it/
     map.root :controller => "customers"
+
+
+Edit each of in `config/environments/development.rb` and `production.rb`, adding a line:
+
+    ActionController::Base.session_options[:domain] = "go-test.local"   # development.rb
+    ActionController::Base.session_options[:domain] = 'go-test.it'      # production.rb
 
 
 Then continue:
