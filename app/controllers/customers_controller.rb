@@ -1,6 +1,7 @@
 class CustomersController < ApplicationController
 
-  before_filter :customer_login_required, :except => :new
+  before_filter :customer_login_required, :except => [:new, :choose]
+  before_filter :login_required, :only => :choose
   def new
     @customer_signup = CustomerSignup.new(params[:customer_signup])
     return unless request.post?
