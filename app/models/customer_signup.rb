@@ -25,7 +25,7 @@ class CustomerSignup < ActiveRecord::BaseWithoutTable
       end
     end
 
-    token = InvitationToken.find_by_code(invitation_code) rescue nil
+    token = Token::Invitation.find_by_code(invitation_code)
     if not token.valid_for?(customer, user) then
       token.errors.on_base.each do |error|
         errors.add :invitation_code, error
