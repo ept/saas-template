@@ -12,8 +12,15 @@ Using this template in your application:
     $ git remote add saas git@github.com:ept/saas-template.git
     $ git pull saas master
 
-Resolve any merge conflicts, then do `git commit`. Create databases `myapp_development`
+Resolve any merge conflicts, then do `git commit -a`. Create databases `myapp_development`
 and `myapp_test` (or whatever you called the app), tweak database config if necessary.
+
+Add the following line to `config/environment.rb`:
+
+    config.gem "rubyist-aasm", :lib => 'aasm', :source => "http://gems.github.com"
+
+Edit `config/initializers/site_keys.rb` and change the value for `REST_AUTH_SITE_KEY`
+to something unique and random.
 
 Then continue:
 
