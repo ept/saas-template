@@ -96,3 +96,21 @@ Then continue:
     $ rake features
 
 That should be everything up and running!
+
+If your `app/views/layouts` does not yet exist you will get some errors running cucumber
+(`rake features`). You can fix them by adding a simple `app/views/layouts/application.html.erb`,
+like the following:
+
+    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+    <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+      <head>
+        <meta http-equiv="content-type" content="text/html;charset=UTF-8" />
+        <title>Hello World!</title>
+      </head>
+      <body>
+        <p style="color: green" id="flashNotice"><%= flash[:notice] %></p>
+        <p style="color: red" id="flashError"><%= flash[:error] %></p>
+        <%= yield %>
+      </body>
+    </html>
