@@ -10,3 +10,6 @@
 [submodule "vendor/plugins/base_without_table"]
 	path = vendor/plugins/base_without_table
 	url = git://gitorious.org/activerecord-basewithouttable-for-rails-2/mainline.git
+[submodule "vendor/plugins/custom-err-msg"]
+	path = vendor/plugins/custom-err-msg
+	url = git://github.com/gumayunov/custom-err-msg.git

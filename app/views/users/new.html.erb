@@ -1,0 +1,32 @@
+<% content_for :page_title do %>Signup<% end %>
+<% content_for :menu_item do %>signup<% end %>
+<% content_for :submenu_item do %>index<% end %>
+
+<h1>Confirm details</h1>
+
+<% form_for :user, @user do |fu| %>
+<% fields_for :customer, @customer do |fc| %>
+
+  <%= error_messages_for :user, :customer, :token %>
+
+  <table class="noborder">
+    <%= form_row fu, :name, "Your name (optional)" %>
+
+    <% if @new_user then %>
+      <%= form_row fu, :password, "Your new password", :type => :password %>
+      <%= form_row fu, :password_confirmation, "Confirm your password", :type => :password %>
+    <% else %>
+      <%= form_row fu, :password, "Your current password", :type => :password %>
+    <% end %>
+
+    <%= form_row fc, :name, "Company name (optional)" %>
+
+    <tr>
+      <th></th>
+      <td><%= fu.submit 'Set up account' %></td>
+      <td><%= fu.hidden_field :email, :value => @user.email %><input type="hidden" name="invitation_code" value="<%= params[:invitation_code] %>" /></td>
+    </tr>
+  </table>
+
+<% end %>
+<% end %>

@@ -1,0 +1,19 @@
+<h1>Sign up</h1>
+
+<% form_for :customer_signup, @customer_signup do |f| %>
+  <%= f.error_messages %>
+
+  <table class="noborder">
+    <tr>
+      <th><%= f.label :subdomain, 'Choose your URL' %></th>
+      <td>http://<%= f.text_field :subdomain, :size => 20 %>.go-test.it/</td>
+      <td><%= f.error_message_on :subdomain %></td>
+    </tr>
+    <%= form_row f, :email, "Your email address" %>
+    <%= form_row f, :invitation_code, "Invitation code" %>
+    <tr>
+      <th></th>
+      <td><%= f.submit 'Sign up for free' %></td>
+    </tr>
+  </table>
+<% end %>

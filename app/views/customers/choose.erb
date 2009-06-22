@@ -1,0 +1,6 @@
+<h1>To where are you going:</h1>
+<ul>
+  <% @customers.each do |customer| %>
+    <li><%= link_to customer.name, :subdomain => customer.subdomain, :action => "dashboard" %></li>
+  <% end %>
+</ul>
