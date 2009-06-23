@@ -2,6 +2,21 @@
 
 <p><strong>Name:</strong> <%= h @user.name %></p>
 
-<p><strong>Email:</strong> <a href="mailto:<%= h @user.email %>"><%= h @user.email %></a></p>
+<p><strong>Email:</strong> <a href="mailto:<%= h @user.email %>"><%= h @user.email %></a>
+    <%= if @user.active? then '(verified)' elsif @user.pending? then '(unverified)' end %></p>
 
-<p><%= link_to 'Edit details or change password', edit_user_path(@user) %></p>
+<% if @user.passive? %>
+    <p>This user has been invited, but has not yet created a password.</p>
+<% end %>
+
+<% if @user.link_to(current_customer).role == 'Admin' %>
+    <p>This user is an admin for <%= h current_customer.name %>.</p>
+<% end %>
+
+<% if @user == current_user %>
+    <p><%= link_to "Edit your details or change password", edit_user_path(@user) %></p>
+<% elsif current_user.can_edit_user?(@user, current_customer) %>
+    <p><%= link_to "Edit this user's details", edit_user_path(@user) %></p>
+<% end %>
+
+<p><%= link_to "Back to user list", users_path %></p>

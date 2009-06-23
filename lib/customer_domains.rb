@@ -1,6 +1,11 @@
 module CustomerDomains
   protected
 
+  # Inclusion hook to make #current_customer available as ActionView helper method.
+  def self.included(base)
+    base.send :helper_method, :current_customer if base.respond_to? :helper_method
+  end
+
   # Works in the same way as RestfulAuth's current_user
   def current_customer
     @current_customer ||= if current_subdomain

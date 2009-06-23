@@ -69,10 +69,21 @@ class User < ActiveRecord::Base
   def same_customer_as?(other_user)
     !(self.customers & other_user.customers).empty?
   end
+  
+  # Returns the CustomerUser object which forms the link between this user and a given customer
+  def link_to(customer)
+    customer_users.first(:conditions => {:customer_id => customer.id})
+  end
+  
+  # true iff +self+ has an admin role connecting them to +customer+.
+  def is_admin_for?(customer)
+    role = link_to(customer)
+    !role.nil? && (role.role == 'admin')
+  end
 
   # true if +other_user+ is +self+ or if +self+ has administrative powers over +other_user+.
-  def can_edit_settings_for?(other_user)
-    other_user == self
+  def can_edit_user?(other_user, current_customer)
+    (other_user == self) || is_admin_for?(current_customer)
   end
 
   # Allow a user in 'passive' role to be created without password. Useful for inviting people

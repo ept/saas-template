@@ -1,4 +1,4 @@
-<h1>Users for <%= @customer.name %></h1>
+<h1>Users for <%= current_customer.name %></h1>
 
 <table>
     <tr>
@@ -11,11 +11,13 @@
     <tr>
         <td><%= link_to h(user.name), user %></td>
         <td><a href="mailto:<%= h user.email %>"><%= h user.email %></a></td>
-        <td>User</td>
+        <td><%= h((if user.active? then user.link_to(current_customer).role
+                elsif user.passive? then 'Invited' else user.state end
+                ).capitalize) %></td>
         <td>
             <%
             actions = [link_to('Show profile', user)]
-            actions << link_to('Edit', edit_user_path(user)) if current_user.can_edit_settings_for?(user)
+            actions << link_to('Edit', edit_user_path(user)) if current_user.can_edit_user?(user, current_customer)
             %>
             <%= actions.join(', ') %>
         </td>

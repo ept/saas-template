@@ -294,6 +294,46 @@ describe User do
     end
   end
 
+  describe "#can_edit_user?" do
+    before do
+      @admin = create_user :email => 'admin@example.com'
+      @user1 = create_user :email => 'user1@example.com'
+      @user2 = create_user :email => 'user2@example.com'
+      @other = create_user :email => 'other@example.org'
+      @customer = Customer.new :subdomain => 'example'
+      @othercus = Customer.new :subdomain => 'other'
+      CustomerUser.new(:customer => @customer, :user => @admin, :role => 'admin').save!
+      @customer.users << [@user1, @user2]
+      @othercus.users << [@other]
+      [@customer, @othercus].each{|c| c.save! }
+      [@admin, @user1, @user2, @other].each{|u| u.reload}
+    end
+
+    it "should allow a normal user to edit themselves" do
+      @user1.can_edit_user?(@user1, @customer).should be_true
+    end
+
+    it "should allow an admin to edit themselves" do
+      @admin.can_edit_user?(@admin, @customer).should be_true
+    end
+
+    it "should allow an admin to edit another user in the same customer" do
+      @admin.can_edit_user?(@user1, @customer).should be_true
+    end
+
+    it "should not allow a normal user to edit another normal user" do
+      @user1.can_edit_user?(@user2, @customer).should be_false
+    end
+
+    it "should not allow a normal user to edit an admin user" do
+      @user1.can_edit_user?(@admin, @customer).should be_false
+    end
+
+    it "should not allow an admin to edit a user in another customer" do
+      @admin.can_edit_user?(@other, @othercus).should be_false
+    end
+  end
+  
   describe '#email=' do
     it 'should use the part before the @ sign' do
       record = User.new :email => 'joe.bloggs@example.com'

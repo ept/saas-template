@@ -59,7 +59,7 @@ class UsersController < ApplicationController
     @token.transaction do
       if @token.valid_for?(@customer, @user)
         if ((@new_user && @user.register!) || @user.authenticated?(params[:user][:password])) && @customer.save
-          CustomerUser.new(:customer => @customer, :user => @user).save!
+          CustomerUser.new(:customer => @customer, :user => @user).grant_admin!
           @token.use!
           flash[:notice] = "Done!"
           self.current_user = @user
@@ -74,19 +74,17 @@ class UsersController < ApplicationController
 
   # List of users for the current customer
   def index
-    @customer = current_customer
-    @users = @customer.users
+    @users = current_customer.users.scoped(:order => 'name, email')
     @user = User.new
   end
 
   # Invite new user to join customer
   def create
-    @customer = current_customer
-    @users = @customer.users
+    @users = current_customer.users
 
     @user = User.first(:conditions => {:email => params[:user][:email].downcase})
     if @user
-      if @user.customers.include? @customer
+      if @user.customers.include? current_customer
         flash[:notice] = "#{@user.email} is already invited."
         return redirect_to(:action => :index)
       end
@@ -107,21 +105,37 @@ class UsersController < ApplicationController
   # User profile
   def show
     @user = User.find(params[:id])
-    raise ActiveRecord::RecordNotFound unless @user.same_customer_as? current_user
+    raise ActiveRecord::RecordNotFound unless current_user.same_customer_as? @user
   end
 
   # Change password or user details
   def edit
     @user = User.find(params[:id])
-    raise ActiveRecord::RecordNotFound unless @user == current_user
+    raise ActiveRecord::RecordNotFound unless current_user.can_edit_user? @user, current_customer
   end
 
   def update
     @user = User.find(params[:id])
-    raise ActiveRecord::RecordNotFound unless @user == current_user
+    raise ActiveRecord::RecordNotFound unless current_user.can_edit_user? @user, current_customer
 
-    if @user.update_attributes(params[:user])
-      flash[:notice] = 'Your details have been updated.'
+    # only a user themselves can change password
+    if (@user == current_user) && params[:user][:password]
+      @user.password = params[:user][:password]
+      @user.password_confirmation = params[:user][:password_confirmation]
+    end
+
+    if (params[:grant_admin] || params[:revoke_admin]) && (current_user.is_admin_for?(current_customer))
+      role = @user.link_to(current_customer)
+      role.grant_admin! if params[:grant_admin]
+      role.revoke_admin! if params[:revoke_admin]
+    end
+
+    # Other attributes
+    @user.name = params[:user][:name]
+    @user.email = params[:user][:email]
+
+    if @user.save
+      flash[:notice] = 'Details have been updated.'
       redirect_to @user
     else
       render :action => 'edit'

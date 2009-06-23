@@ -51,6 +51,88 @@ describe UsersController do
   end
 
 
+  describe "#update" do
+    before :each do
+      @widget = mock_model Customer, {:subdomain => "widget"}
+
+      @admin_role = mock_model CustomerUser
+      @admin = mock_model User, {:state => 'active'}
+      @admin.should_receive(:link_to).any_number_of_times.and_return(@admin_role)
+      @admin.should_receive(:is_admin_for?).any_number_of_times.and_return(true)
+      @admin.should_receive(:can_edit_user?).any_number_of_times.and_return(true)
+
+      @user_role = mock_model CustomerUser
+      @user = mock_model User
+      @user.should_receive(:link_to).any_number_of_times.and_return(@user_role)
+      @user.should_receive(:is_admin_for?).any_number_of_times.and_return(false)
+      @user.should_receive(:can_edit_user?).with(@user, @widget).any_number_of_times.and_return(true)
+      @user.should_receive(:can_edit_user?).with(@admin, @widget).any_number_of_times.and_return(false)
+
+      controller.should_receive(:customer_login_required).any_number_of_times.and_return(true)
+      controller.should_receive(:current_customer).any_number_of_times.and_return(@widget)
+    end
+
+    it "should allow a user to change their own details and password" do
+      controller.should_receive(:current_user).any_number_of_times.and_return(@user)
+      User.should_receive(:find).and_return(@user)
+      @user.should_receive(:name=).with('john smith')
+      @user.should_receive(:email=).with('blah@blah.com')
+      @user.should_receive(:password=).with('blahblah')
+      @user.should_receive(:password_confirmation=).with('blahblah')
+      @user.should_receive(:save).and_return(true)
+      post :update, :user => {:name => 'john smith', :email => 'blah@blah.com',
+        :password => 'blahblah', :password_confirmation => 'blahblah'}
+      response.should be_redirect
+      flash[:notice].should =~ /have been updated/
+    end
+    
+    it "should not allow an admin to change another user's password" do
+      controller.should_receive(:current_user).any_number_of_times.and_return(@admin)
+      User.should_receive(:find).and_return(@user)
+      @user.should_receive(:name=).with('john smith')
+      @user.should_receive(:email=).with('blah@blah.com')
+      @user.should_not_receive(:password=)
+      @user.should_receive(:save).and_return(true)
+      post :update, :user => {:name => 'john smith', :email => 'blah@blah.com',
+        :password => 'blahblah', :password_confirmation => 'blahblah'}
+      response.should be_redirect
+      flash[:notice].should =~ /have been updated/
+    end
+    
+    it "should allow an admin to grant admin permissions" do
+      controller.should_receive(:current_user).any_number_of_times.and_return(@admin)
+      User.should_receive(:find).and_return(@user)
+      @user.should_receive(:name=).with('john smith')
+      @user.should_receive(:email=).with('blah@blah.com')
+      @user.should_receive(:save).and_return(true)
+      @user_role.should_receive(:grant_admin!)
+      post :update, :user => {:name => 'john smith', :email => 'blah@blah.com'}, :grant_admin => '1'
+      response.should be_redirect
+      flash[:notice].should =~ /have been updated/
+    end
+    
+    it "should allow an admin to revoke admin permissions" do
+      controller.should_receive(:current_user).any_number_of_times.and_return(@admin)
+      User.should_receive(:find).and_return(@user)
+      @user.should_receive(:name=).with('john smith')
+      @user.should_receive(:email=).with('blah@blah.com')
+      @user.should_receive(:save).and_return(true)
+      @user_role.should_receive(:revoke_admin!)
+      post :update, :user => {:name => 'john smith', :email => 'blah@blah.com'}, :revoke_admin => '1'
+      response.should be_redirect
+      flash[:notice].should =~ /have been updated/
+    end
+    
+    it "should not allow a normal user to grant admin permissions" do
+      controller.should_receive(:current_user).any_number_of_times.and_return(@user)
+      User.should_receive(:find).and_return(@admin)
+      lambda {
+        post :update, :user => {:name => 'john smith', :email => 'blah@blah.com'}, :revoke_admin => '1'
+      }.should raise_error(ActiveRecord::RecordNotFound)
+    end
+  end
+
+
   describe "#forgotten_password" do
     before :each do
       @active_user = mock_model User, {:state => 'active'}
