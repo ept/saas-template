@@ -4,6 +4,14 @@
 
 <h1>Confirm details</h1>
 
+<% unless @new_user %>
+    <p>We already have an account with your email address on file. Please log in with
+        your existing details so that you can access your new account with your existing
+        password. You can
+        <%= link_to 'reset your password', forgotten_password_path(:email => @user.email) %>
+        in case you have forgotten it.</p>
+<% end %>
+
 <% form_for :user, @user do |fu| %>
 <% fields_for :customer, @customer do |fc| %>
 
@@ -29,4 +37,8 @@
   </table>
 
 <% end %>
+<% end %>
+
+<% unless @new_user %>
+    <p><%= link_to 'Forgotten password?', forgotten_password_path(:email => @user.email) %></p>
 <% end %>

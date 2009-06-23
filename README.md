@@ -62,6 +62,8 @@ Edit `config/routes.rb` and add the following:
     map.register '/register', :controller => 'users', :action => 'create'
     map.signup '/signup', :controller => 'customers', :action => 'new'
     map.welcome '/welcome', :controller => 'customers', :action => 'dashboard'
+    map.forgotten_password '/forgotten_password', :controller => 'users', :action => 'forgotten_password'
+
     map.resources :users
 
     map.resource :session

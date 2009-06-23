@@ -41,6 +41,8 @@ describe User do
   it 'requires password' do
     lambda do
       u = create_user(:password => nil)
+      u.state = 'pending'
+      u.should_not be_valid
       u.errors.on(:password).should_not be_nil
     end.should_not change(User, :count)
   end
@@ -292,10 +294,22 @@ describe User do
     end
   end
 
+  describe '#email=' do
+    it 'should use the part before the @ sign' do
+      record = User.new :email => 'joe.bloggs@example.com'
+      record.name.should == 'Joe Bloggs'
+    end
+  
+    it 'should not override a manually specified name with a guess' do
+      record = User.new :email => 'joe@example.com', :name => 'Joe Bloggs'
+      record.name.should == 'Joe Bloggs'
+    end
+  end
+
 protected
   def create_user(options = {})
     record = User.new({:email => 'quire@example.com', :password => 'quire69', :password_confirmation => 'quire69' }.merge(options))
-    record.register! if record.valid?
+    record.register!
     record
   end
 end

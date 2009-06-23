@@ -1,0 +1,35 @@
+<h1>Users for <%= @customer.name %></h1>
+
+<table>
+    <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Role</th>
+        <th>Actions</th>
+    </tr>
+<% for user in @users %>
+    <tr>
+        <td><%= link_to h(user.name), user %></td>
+        <td><a href="mailto:<%= h user.email %>"><%= h user.email %></a></td>
+        <td>User</td>
+        <td>
+            <%
+            actions = [link_to('Show profile', user)]
+            actions << link_to('Edit', edit_user_path(user)) if current_user.can_edit_settings_for?(user)
+            %>
+            <%= actions.join(', ') %>
+        </td>
+    </tr>
+<% end %>
+</table>
+
+<h2>Invite more users to your account</h2>
+
+<% form_for(@user) do |f| %>
+    <%= f.error_messages %>
+    <p>
+        <%= f.label :email, 'Their email address:' %><br />
+        <%= f.text_field :email %>
+    </p>
+    <p><%= f.submit 'Invite' %></p>
+<% end %>

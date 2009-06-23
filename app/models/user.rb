@@ -12,6 +12,8 @@ class User < ActiveRecord::Base
   include Authentication::ByCookieToken
   include Authorization::AasmRoles
 
+  aasm_initial_state :initial => :passive
+
   validates_format_of       :name,     :with => Authentication.name_regex,  :message => Authentication.bad_name_message, :allow_nil => true
   validates_length_of       :name,     :maximum => 100
 
@@ -54,12 +56,38 @@ class User < ActiveRecord::Base
   end
 
   def email=(value)
-    write_attribute :email, (value ? value.downcase : nil)
+    if value
+      value = value.downcase
+      write_attribute :email, value
+      self.name = (value[/^[^@]+/].split(/[\._\-\s]/).each{|w| w.capitalize! }.join(' ') rescue nil) if name.blank?
+    else
+      write_attribute :email, nil
+    end
   end
 
   # true if +self+ and +other_user+ have at least one customer in common.
   def same_customer_as?(other_user)
     !(self.customers & other_user.customers).empty?
+  end
+
+  # true if +other_user+ is +self+ or if +self+ has administrative powers over +other_user+.
+  def can_edit_settings_for?(other_user)
+    other_user == self
+  end
+
+  # Allow a user in 'passive' role to be created without password. Useful for inviting people
+  # to join a customer.
+  def password_required?
+    !passive? && super
+  end
+
+  # Avoid suspended/deleted users from getting entry by resetting their password
+  def can_reset_password?
+    passive? || pending? || active?
+  end
+
+  def password_reset_email!
+    # TODO
   end
 
   protected

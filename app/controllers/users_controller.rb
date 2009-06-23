@@ -1,23 +1,23 @@
 class UsersController < ApplicationController
 
-  before_filter :login_required, :except => [:new]
+  before_filter :customer_login_required, :except => [:new, :forgotten_password]
 
   # This is misleadingly placed. Should probably be in the customers (or customer_signup) controller
   # it is step two of the action that started by finding the subdomain, email and invitation code in 
   # customers/new (/signup)
   def new
 
-    if not (request.post? or (current_subdomain and params[:email] and params[:invitation_code])) then
+    if !(request.post? || (current_subdomain && params[:email] && params[:invitation_code]))
       redirect_to :subdomain => false, :controller => "customers", :action => "new"
     end
     
     # Do we have an existing user?
-    @user = User.find_by_email(params[:email] || params[:user][:email])
-    if @user then
+    @user = User.find_by_email((params[:email] || params[:user][:email] || '').downcase)
+    if @user
       @new_user = false
 
-      if request.post? then
-        if not @user.authenticated? params[:user][:password] then
+      if request.post?
+        if !@user.authenticated?(params[:user][:password])
           @user.errors.add :password, "Incorrect password"
         end
       end
@@ -28,31 +28,27 @@ class UsersController < ApplicationController
       @user.email ||= params[:email]
 
       # Can only happen if someone is mucking around
-      if not @user.valid? and @user.errors[:email] then
+      if !@user.valid? && @user.errors[:email]
         flash[:error] = "Email address " + @user.errors[:email]
         redirect_to :subdomain => false, :controller => "customers", :action => "new"
         return
       end
 
-      # Set some defaults
-      if not request.post? then
-        @user.errors.clear
-        @user.email = params[:email]
-        @user.name = @user.email[/^[^@]+/].split(/[\._\-\s]/).each{|w| w.capitalize! }.join(' ')
-      end
+      # Error messages only on posting the form
+      @user.errors.clear if !request.post?
     end
 
     @customer = Customer.new(params[:customer])
     @customer.subdomain = current_subdomain
 
     # May happen on double-submission
-    if not @customer.valid? and @customer.errors[:subdomain] then
+    if !@customer.valid? && @customer.errors[:subdomain]
       flash[:error] = "Subdomain " + @customer.errors[:subdomain]
       redirect_to :subdomain => false, :controller => "customers", :action => "new"
       return
     end
 
-    if not request.post? then
+    if !request.post?
       @customer.errors.clear
       return
     end
@@ -61,8 +57,8 @@ class UsersController < ApplicationController
     @token = Token::Invitation.find_by_code params[:invitation_code]
 
     @token.transaction do
-      if @token.valid_for?(@customer, @user) then
-        if ((@new_user and @user.register!) or @user.authenticated?(params[:user][:password])) and @customer.save then
+      if @token.valid_for?(@customer, @user)
+        if ((@new_user && @user.register!) || @user.authenticated?(params[:user][:password])) && @customer.save
           CustomerUser.new(:customer => @customer, :user => @user).save!
           @token.use!
           flash[:notice] = "Done!"
@@ -70,12 +66,43 @@ class UsersController < ApplicationController
           redirect_to :controller => "customers", :action => "dashboard"
         end
       else
-        flash[:error] = "Token" + @token.errors_on_base
+        flash[:error] = "Token " + @token.errors_on_base
         redirect_to :subdomain => false, :controller => "customers", :action => "new"
       end
     end
   end
 
+  # List of users for the current customer
+  def index
+    @customer = current_customer
+    @users = @customer.users
+    @user = User.new
+  end
+
+  # Invite new user to join customer
+  def create
+    @customer = current_customer
+    @users = @customer.users
+
+    @user = User.first(:conditions => {:email => params[:user][:email].downcase})
+    if @user
+      if @user.customers.include? @customer
+        flash[:notice] = "#{@user.email} is already invited."
+        return redirect_to(:action => :index)
+      end
+    else
+      @user = User.new(params[:user])
+      @user.state = 'passive'
+    end
+    @user.customers << current_customer
+
+    if @user.save
+      flash[:notice] = "Great! We have sent an invitation to #{@user.email}."
+      redirect_to users_path
+    else
+      render :action => :index
+    end
+  end
 
   # User profile
   def show
@@ -98,6 +125,25 @@ class UsersController < ApplicationController
       redirect_to @user
     else
       render :action => 'edit'
+    end
+  end
+
+  # Request a password reset email
+  def forgotten_password
+    @email = (params[:email] || '').downcase
+    @user = User.find_by_email @email
+    return unless request.post?
+
+    if @user && @user.can_reset_password?
+      flash[:notice] = "We have sent you a link to reset your password. Please check your email."
+      @user.password_reset_email!
+      redirect_to login_path
+    elsif @user
+      flash[:error] = "Sorry, your account is suspended. Please contact support."
+      redirect_to forgotten_password_path(:email => @email)
+    else
+      flash[:error] = "Sorry, we couldn't find that email address in our database."
+      redirect_to forgotten_password_path(:email => @email)
     end
   end
 end

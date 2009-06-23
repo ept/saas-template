@@ -3,8 +3,8 @@ module CustomerDomains
 
   # Works in the same way as RestfulAuth's current_user
   def current_customer
-    if subdomain = current_subdomain then
-      Customer.find_by_subdomain(subdomain) rescue nil
+    @current_customer ||= if current_subdomain
+      Customer.find_by_subdomain(current_subdomain) rescue nil
     else
       nil
     end
@@ -17,7 +17,7 @@ module CustomerDomains
 
   # before_filter :customer_login_required, checks for current_customer, current_user and a link between the two
   def customer_login_required
-    if current_customer and current_user and CustomerUser.linked?(current_customer, current_user) then
+    if current_customer && current_user && CustomerUser.linked?(current_customer, current_user)
       true
     else
       access_denied
