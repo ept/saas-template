@@ -73,6 +73,7 @@ describe User do
       end
     end
   end
+
   describe 'disallows illegitimate emails' do
     ['!!@nobadchars.com', 'foo@no-rep-dots..com', 'foo@badtld.xxx', 'foo@toolongtld.abcdefg',
      'Iñtërnâtiônàlizætiøn@hasnt.happened.to.email', 'need.domain.and.tld@de', "tab\t", "newline\n",
@@ -101,6 +102,7 @@ describe User do
       end
     end
   end
+
   describe "disallows illegitimate names" do
     ["tab\t", "newline\n",
      '1234567890_234567890_234567890_234567890_234567890_234567890_234567890_234567890_234567890_234567890_',
@@ -114,14 +116,26 @@ describe User do
     end
   end
 
-  it 'resets password' do
-    users(:quentin).update_attributes(:password => 'new password', :password_confirmation => 'new password')
-    User.authenticate('quentin@example.com', 'new password').should == users(:quentin)
-  end
+  describe "updating details" do
+    it 'sets a new password if a password was given' do
+      users(:quentin).update_attributes(:password => 'new password', :password_confirmation => 'new password')
+      User.authenticate('quentin@example.com', 'new password').should == users(:quentin)
+    end
 
-  it 'does not rehash password' do
-    users(:quentin).update_attributes(:email => 'quentin2@gmail.com')
-    User.authenticate('quentin2@gmail.com', 'monkey').should == users(:quentin)
+    it 'does not change password if none was given' do
+      users(:quentin).update_attributes(:password => '', :password_confirmation => '').should be_true
+      User.authenticate('quentin@example.com', 'monkey').should == users(:quentin)
+    end
+
+    it 'does not rehash password' do
+      users(:quentin).update_attributes(:name => 'I am Quentin')
+      User.authenticate('quentin@example.com', 'monkey').should == users(:quentin)
+    end
+
+#    it 'does not immediately update an email address' do
+#      users(:quentin).update_attributes(:email => 'quentin2@gmail.com')
+#      User.authenticate('quentin2@gmail.com', 'monkey').should be_nil
+#    end
   end
 
   #
@@ -214,7 +228,7 @@ describe User do
 
   it 'does not authenticate suspended user' do
     users(:quentin).suspend!
-    User.authenticate('quentin@example.com', 'monkey').should_not == users(:quentin)
+    lambda{ User.authenticate('quentin@example.com', 'monkey') }.should raise_error(User::UserSuspended)
   end
 
   it 'deletes user' do
@@ -247,6 +261,34 @@ describe User do
       User.update_all :activation_code => 'foo-bar', :activated_at => nil
       @user.reload.unsuspend!
       @user.should be_pending
+    end
+  end
+  
+  describe "#same_customer_as?" do
+    before do
+      @user1 = create_user
+      @user2 = create_user :email => 'quire2@example.com'
+      @customer1 = Customer.new :name => 'Widgets Inc', :subdomain => 'widgets'
+      @customer2 = Customer.new :name => 'Frobs Inc', :subdomain => 'frobs'
+      @customer1.users << @user1
+      @customer2.users << @user2
+      @customer1.save!
+      @customer2.save!
+      @user1.reload
+      @user2.reload
+    end
+
+    it 'should return true for the same user' do
+      @user1.same_customer_as?(@user1).should be_true
+    end
+    
+    it 'should return true for another user in the same customer' do
+      @customer1.users << @user2
+      @user1.same_customer_as?(@user2).should be_true
+    end
+    
+    it 'should return false for when the other user does not have any customers in common' do
+      @user1.same_customer_as?(@user2).should be_false
     end
   end
 

@@ -7,7 +7,12 @@ class SessionsController < ApplicationController
 
   def create
     logout_keeping_session!
-    user = User.authenticate(params[:email], params[:password])
+    begin
+      user = User.authenticate(params[:email], params[:password])
+    rescue User::UserSuspended
+      flash[:error] = $!; return
+    end
+
     if user
       # Protects against session fixation attacks, causes request forgery
       # protection if user resubmits an earlier form using back
@@ -17,7 +22,11 @@ class SessionsController < ApplicationController
       new_cookie_flag = (params[:remember_me] == "1")
       handle_remember_cookie! new_cookie_flag
 
-      flash[:notice] = "Logged in successfully"
+      if user.pending?
+        flash[:error] = "Your email address is not yet validated. Please click on the link in the message we have sent you."
+      else
+        flash[:notice] = "Logged in successfully"
+      end
 
       redirect_to :controller => "customers", :action => "choose"
     else

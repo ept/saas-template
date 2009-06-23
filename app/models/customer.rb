@@ -6,6 +6,7 @@ class Customer < ActiveRecord::Base
     %w( www wwww test dev staging ns1 ns2 localhost mail imap pop3 )
   end
 
+  has_many :customer_users
   has_many :users, :through => :customer_users
   has_many :projects
 

@@ -1,0 +1,23 @@
+<h1>Update your details</h1>
+
+<% form_for @user do |f| %>
+  <%= f.error_messages %>
+
+  <table class="noborder">
+    <%= form_row f, :name, 'Display name' %>
+    <%= form_row f, :email, 'Email address' %>
+    <tr>
+      <th><%= f.label :password, @user.password_required? ? 'Set your password' : 'Change password' %></th>
+      <td><%= f.password_field :password %></td>
+      <td>
+        <% unless @user.password_required? %>(leave blank to keep unchanged) <% end %>
+        <%= f.error_message_on :subdomain %>
+      </td>
+    </tr>
+    <%= form_row f, :password_confirmation, 'Confirm password', :type => :password %>
+    <tr>
+      <th></th>
+      <td><%= f.submit 'Update details' %></td>
+    </tr>
+  </table>
+<% end %>

@@ -1,6 +1,9 @@
 require 'digest/sha1'
 
 class User < ActiveRecord::Base
+
+  class UserSuspended < StandardError; end
+
   has_many :customers, :through => :customer_users
   has_many :customer_users
 
@@ -26,15 +29,18 @@ class User < ActiveRecord::Base
 
 
 
-  # Authenticates a user by their login name and unencrypted password.  Returns the user or nil.
-  #
-  # uff.  this is really an authorization, not authentication routine.  
-  # We really need a Dispatch Chain here or something.
-  # This will also let us return a human error message.
-  #
+  # Authenticates a user by their login name and unencrypted password.  Returns the user or nil,
+  # or throws +UserSuspended+ if the account is suspended.
   def self.authenticate(email, password)
     return nil if email.blank? || password.blank?
-    u = find_in_state :first, :active, :conditions => {:email => email.downcase} # need to get the salt
+    conditions = {:email => email.downcase}
+    u = find_in_state :first, :active,  :conditions => conditions
+    u = find_in_state :first, :pending, :conditions => conditions if u.nil?
+    if u.nil?
+      if find_in_state :first, :suspended, :conditions => conditions
+        raise UserSuspended, "Your account has been suspended. Please contact support."
+      end
+    end
     u && u.authenticated?(password) ? u : nil
   end
 
@@ -49,6 +55,11 @@ class User < ActiveRecord::Base
 
   def email=(value)
     write_attribute :email, (value ? value.downcase : nil)
+  end
+
+  # true if +self+ and +other_user+ have at least one customer in common.
+  def same_customer_as?(other_user)
+    !(self.customers & other_user.customers).empty?
   end
 
   protected

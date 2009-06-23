@@ -1,0 +1,7 @@
+<h1>User profile</h1>
+
+<p><strong>Name:</strong> <%= h @user.name %></p>
+
+<p><strong>Email:</strong> <a href="mailto:<%= h @user.email %>"><%= h @user.email %></a></p>
+
+<p><%= link_to 'Edit details or change password', edit_user_path(@user) %></p>

@@ -1,5 +1,7 @@
 class UsersController < ApplicationController
 
+  before_filter :login_required, :except => [:new]
+
   # This is misleadingly placed. Should probably be in the customers (or customer_signup) controller
   # it is step two of the action that started by finding the subdomain, email and invitation code in 
   # customers/new (/signup)
@@ -60,7 +62,7 @@ class UsersController < ApplicationController
 
     @token.transaction do
       if @token.valid_for?(@customer, @user) then
-        if ((@new_user and @user.save) or @user.authenticated?(params[:user][:password])) and @customer.save then
+        if ((@new_user and @user.register!) or @user.authenticated?(params[:user][:password])) and @customer.save then
           CustomerUser.new(:customer => @customer, :user => @user).save!
           @token.use!
           flash[:notice] = "Done!"
@@ -74,4 +76,28 @@ class UsersController < ApplicationController
     end
   end
 
+
+  # User profile
+  def show
+    @user = User.find(params[:id])
+    raise ActiveRecord::RecordNotFound unless @user.same_customer_as? current_user
+  end
+
+  # Change password or user details
+  def edit
+    @user = User.find(params[:id])
+    raise ActiveRecord::RecordNotFound unless @user == current_user
+  end
+
+  def update
+    @user = User.find(params[:id])
+    raise ActiveRecord::RecordNotFound unless @user == current_user
+
+    if @user.update_attributes(params[:user])
+      flash[:notice] = 'Your details have been updated.'
+      redirect_to @user
+    else
+      render :action => 'edit'
+    end
+  end
 end
