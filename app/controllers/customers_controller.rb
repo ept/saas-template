@@ -2,8 +2,13 @@ class CustomersController < ApplicationController
 
   before_filter :customer_login_required, :except => [:new, :choose]
   before_filter :login_required, :only => :choose
+
   def new
-    @customer_signup = CustomerSignup.new(params[:customer_signup])
+    get_params = {}
+    ['email', 'invitation_code', 'subdomain'].each{|param| get_params[param] = params[param] if params[param] }
+    get_params = nil if get_params == {}
+
+    @customer_signup = CustomerSignup.new(params[:customer_signup] || get_params)
     return unless request.post?
 
     if @customer_signup.valid? then

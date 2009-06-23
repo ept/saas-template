@@ -19,7 +19,7 @@ describe CustomersController do
 
       [@hasni, @newb, @marthynn].each do |user|
         [@ept, @corpus].each do |customer|
-          CustomerUser.should_receive(:linked?).any_number_of_times.with(customer, user).and_return(user.customers.include? customer)
+          CustomerUser.should_receive(:linked?).any_number_of_times.with(customer, user).and_return(user.customers.include?(customer))
         end
       end
     end
@@ -72,6 +72,12 @@ describe CustomersController do
     it "should assign the customer_signup to the view" do
       CustomerSignup.should_receive(:new).any_number_of_times.with(nil).and_return(@signup)
       get :new
+      assigns(:customer_signup).should == @signup
+    end
+
+    it "should allow params to be set as query arguments" do
+      CustomerSignup.should_receive(:new).with({'email' => 'hasni@eptcomputing.com', 'invitation_code' => 'ab48f'}).and_return(@signup)
+      get :new, :email => 'hasni@eptcomputing.com', :invitation_code => 'ab48f'
       assigns(:customer_signup).should == @signup
     end
 
