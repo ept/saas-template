@@ -29,4 +29,13 @@ module CustomerDomains
     end
   end
 
+  # before_filter :customer_admin_required, checks for current_customer, current_user, and a link with an "admin" flag between the two
+  def customer_admin_required
+    if current_customer && current_user && current_user.is_admin_for? current_customer
+      true
+    else
+      access_denied
+    end
+  end
+
 end
