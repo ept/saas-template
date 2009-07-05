@@ -6,6 +6,18 @@ class Token::Base < ActiveRecord::Base
   validates_uniqueness_of :code
   validates_presence_of :type
 
+  def param
+    if read_attribute :param
+      Marshal.load read_attribute(:param)
+    else
+      nil
+    end
+  end
+  
+  def param=(value)
+    write_attribute :param, Marshal.dump(value)
+  end
+
   def valid_token?
     @in_checked_transaction = @in_transaction
     if expired? then
@@ -16,6 +28,7 @@ class Token::Base < ActiveRecord::Base
 
     else
       return true
+
     end
     false
   end
@@ -61,6 +74,13 @@ class Token::Base < ActiveRecord::Base
       throw "Tried to use an invalid token"
     end
     @@invalid_tokens[self] = token
+  end
+
+  # Pseudorandom alphanumeric codes that are very probably unique
+  def self.new_with_code
+    token = self.new
+    token.code = (Time.now.to_f.to_s.reverse + rand.to_s).gsub('.','').to_i.to_s(36)
+    token
   end
 
 end

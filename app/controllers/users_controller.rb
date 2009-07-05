@@ -1,6 +1,8 @@
 class UsersController < ApplicationController
 
   before_filter :customer_login_required, :except => [:new, :forgotten_password]
+  before_filer :customer_admin_required, :only => [:index, :create]
+
 
   # This is misleadingly placed. Should probably be in the customers (or customer_signup) controller
   # it is step two of the action that started by finding the subdomain, email and invitation code in 
@@ -68,7 +70,7 @@ class UsersController < ApplicationController
       else
         flash[:error] = "Token " + @token.errors_on_base
         redirect_to :subdomain => false, :controller => "customers", :action => "new"
-      end
+    en end
     end
   end
 
@@ -94,7 +96,7 @@ class UsersController < ApplicationController
     end
     @user.customers << current_customer
 
-    if @user.save
+    if @user.save and UserMailer.deliver_invitation(current_customer, @user)
       flash[:notice] = "Great! We have sent an invitation to #{@user.email}."
       redirect_to users_path
     else
