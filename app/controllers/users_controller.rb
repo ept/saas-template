@@ -64,19 +64,19 @@ class UsersController < ApplicationController
     @token.transaction do
       if @token.valid_for?(@customer, @user)
         if ((@new_user && @user.register!) || @user.authenticated?(params[:user][:password])) && @customer.save
-           link = CustomerUser.new(:customer => @customer, :user => @user)
-           link.activate!
-           link.grant_admin!
+          link = CustomerUser.new(:customer => @customer, :user => @user)
+          link.activate!
+          link.grant_admin!
 
-           Project.new(:customer => @customer, :name => @customer.subdomain.capitalize).save!
-           @token.use!
+          Project.new(:customer => @customer, :name => @customer.subdomain.capitalize).save!
+          @token.use!
 
-           logout_keeping_session! if current_user
-           self.current_user = @user 
+          logout_keeping_session! if current_user
+          self.current_user = @user 
 
-           flash[:notice] = "Done!"
-           redirect_to :controller => "customers", :action => "welcome"
-         end
+          flash[:notice] = "Done!"
+          redirect_to :controller => "customers", :action => "welcome"
+        end
       else
         flash[:error] = "Token " + @token.errors_on_base
         redirect_to :subdomain => false, :controller => "customers", :action => "new"
