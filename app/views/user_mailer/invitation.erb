@@ -3,7 +3,7 @@ Hi,
 You have been invited to join the <%= @customer.name %> testing team in their
 work on Go Test It. 
 
- <%= @url %>
+<%= url_for :controller => :users, :action => :accept_invitation, :only_path => false, :subdomain => @customer.subdomain, :id => @token.code %>
 
 Yours
 Go Test It
