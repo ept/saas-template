@@ -1,7 +1,10 @@
 class UsersController < ApplicationController
 
-  before_filter :customer_login_required, :except => [:new, :forgotten_password]
-  before_filer :customer_admin_required, :only => [:index, :create]
+  outside_facing_actions = [:new, :forgotten_password, :accept_invitation]
+  layout proc{|controller| outside_facing_actions.include?(controller.params[:action].to_sym) ? 'application' : 'customer_site'}
+
+  before_filter :customer_login_required, :except => outside_facing_actions
+  before_filter :customer_admin_required, :only => [:index, :create]
 
 
   # This is misleadingly placed. Should probably be in the customers (or customer_signup) controller
@@ -70,7 +73,7 @@ class UsersController < ApplicationController
       else
         flash[:error] = "Token " + @token.errors_on_base
         redirect_to :subdomain => false, :controller => "customers", :action => "new"
-    en end
+      end
     end
   end
 
@@ -96,7 +99,7 @@ class UsersController < ApplicationController
     end
     @user.customers << current_customer
 
-    if @user.save and UserMailer.deliver_invitation(current_customer, @user)
+    if @user.save
       flash[:notice] = "Great! We have sent an invitation to #{@user.email}."
       redirect_to users_path
     else
@@ -162,4 +165,44 @@ class UsersController < ApplicationController
       redirect_to forgotten_password_path(:email => @email)
     end
   end
+
+  # Accept an invitation to join a customer
+  def accept_invitation
+
+    @token = Token::Invitation.find_by_code params[:id]
+
+    @customer = Customer.find_by_subdomain @token.param[:subdomain]
+    @user = User.find_by_email @token.param[:email]
+    if current_user && @user != current_user
+      logout_keeping_session!
+    end
+
+    @new_user = @user.state == 'passive'
+    if request.post?
+      @token.transaction do
+        if @token.valid_for?(@customer, @user) 
+          @user.attributes = params[:user] if @new_user
+          if ((@new_user && @user.valid?) || @user.authenticated?(params[:user][:password]))
+            @token.use!
+            @user.save! if @new_user
+            CustomerUser.find(:first, :conditions => {:user_id => @user.id, :customer_id => @customer.id}).activate!
+
+            self.current_user = @user
+            flash[:notice] = "Done!"
+            return redirect_to :controller => "customers", :action => "welcome"
+          end
+        else
+          flash[:error] = "Token " + @token.errors[:base]
+          return redirect_to :action => :accept_invitation
+        end
+      end
+
+      if !@new_user && !@user.authenticated?(params[:user][:password])
+        @user.errors.add :password, "Incorrect password"
+      end
+    end
+    @existing_customer = true
+    render :action => :new
+  end
+
 end

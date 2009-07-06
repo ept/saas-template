@@ -5,7 +5,7 @@ class CustomerUser < ActiveRecord::Base
   validates_presence_of :user
 
   def self.linked?(customer, user)
-    self.exists?(:customer_id => customer, :user_id => user)
+    self.exists?(:customer_id => customer, :user_id => user, :state => 'active')
   end
 
   def role
@@ -32,4 +32,26 @@ class CustomerUser < ActiveRecord::Base
     self.role = 'user'
     save!
   end
+
+  def after_create
+    UserMailer.deliver_invitation(customer, user) if state == 'pending'
+  end
+
+  include AASM
+
+  aasm_column :state
+  aasm_initial_state :pending
+
+  aasm_state :pending
+  aasm_state :active
+  aasm_state :suspended
+
+  aasm_event :activate do
+    transitions :from => :pending, :to => :active
+  end
+
+  aasm_event :suspend do
+    transitions :from => [:pending, :active], :to => :suspended
+  end
+
 end

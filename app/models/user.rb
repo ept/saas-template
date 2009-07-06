@@ -21,7 +21,6 @@ class User < ActiveRecord::Base
   validates_length_of       :email,    :within => 6..100 #r@a.wk
   validates_uniqueness_of   :email
   validates_format_of       :email,    :with => Authentication.email_regex, :message => Authentication.bad_email_message
-
   
 
   # HACK HACK HACK -- how to do attr_accessible from here?
@@ -29,7 +28,8 @@ class User < ActiveRecord::Base
   # anything else you want your user to change should be added here.
   attr_accessible :email, :name, :password, :password_confirmation
 
-
+  before_save :activate_when_password_set
+  after_save :send_email_confirmation
 
   # Authenticates a user by their login name and unencrypted password.  Returns the user or nil,
   # or throws +UserSuspended+ if the account is suspended.
@@ -106,6 +106,18 @@ class User < ActiveRecord::Base
   def make_activation_code
     self.deleted_at = nil
     self.activation_code = self.class.make_token
+  end
+
+  def activate_when_password_set
+    if passive? && password != nil
+      register!
+    end
+  end
+
+  def send_email_confirmation
+    if email_changed?
+      UserMailer.deliver_activation(self)
+    end
   end
 
 

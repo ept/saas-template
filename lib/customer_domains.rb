@@ -34,6 +34,7 @@ module CustomerDomains
     if current_customer && current_user && current_user.is_admin_for?(current_customer)
       true
     else
+      flash[:error] = "You need to log in as an administrator to do that"
       access_denied
     end
   end
