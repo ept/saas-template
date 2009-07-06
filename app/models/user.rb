@@ -29,7 +29,6 @@ class User < ActiveRecord::Base
   attr_accessible :email, :name, :password, :password_confirmation
 
   before_save :activate_when_password_set
-  after_save :send_email_confirmation
 
   # Authenticates a user by their login name and unencrypted password.  Returns the user or nil,
   # or throws +UserSuspended+ if the account is suspended.
@@ -113,12 +112,5 @@ class User < ActiveRecord::Base
       register!
     end
   end
-
-  def send_email_confirmation
-    if email_changed?
-      UserMailer.deliver_activation(self)
-    end
-  end
-
 
 end

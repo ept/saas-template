@@ -33,10 +33,6 @@ class CustomerUser < ActiveRecord::Base
     save!
   end
 
-  def after_create
-    UserMailer.deliver_invitation(customer, user) if state == 'pending'
-  end
-
   include AASM
 
   aasm_column :state

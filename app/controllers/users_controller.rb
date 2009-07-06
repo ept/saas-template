@@ -1,6 +1,6 @@
 class UsersController < ApplicationController
 
-  outside_facing_actions = [:new, :forgotten_password, :accept_invitation]
+  outside_facing_actions = [:new, :forgotten_password, :accept_invitation, :validate_email]
   layout proc{|controller| outside_facing_actions.include?(controller.params[:action].to_sym) ? 'application' : 'customer_site'}
 
   before_filter :customer_login_required, :except => outside_facing_actions
@@ -64,7 +64,10 @@ class UsersController < ApplicationController
     @token.transaction do
       if @token.valid_for?(@customer, @user)
         if ((@new_user && @user.register!) || @user.authenticated?(params[:user][:password])) && @customer.save
-          CustomerUser.new(:customer => @customer, :user => @user).grant_admin!
+          link = CustomerUser.new(:customer => @customer, :user => @user)
+          link.activate!
+          link.grant_admin!
+          Project.new(:customer => @customer, :name => @customer.subdomain.capitalize).save!
           @token.use!
           flash[:notice] = "Done!"
           self.current_user = @user
@@ -173,6 +176,7 @@ class UsersController < ApplicationController
 
     @customer = Customer.find_by_subdomain @token.param[:subdomain]
     @user = User.find_by_email @token.param[:email]
+
     if current_user && @user != current_user
       logout_keeping_session!
     end
@@ -181,10 +185,16 @@ class UsersController < ApplicationController
     if request.post?
       @token.transaction do
         if @token.valid_for?(@customer, @user) 
-          @user.attributes = params[:user] if @new_user
-          if ((@new_user && @user.valid?) || @user.authenticated?(params[:user][:password]))
+          if @new_user
+            # For some reason rails won't give this error
+            @user.errors.add(:password, "can't be blank") if params[:user][:password] == ""
+            @user.password = params[:user][:password]
+            @user.password_confirmation = params[:user][:password_confirmation]
+          end
+
+          if ((@new_user && @user.register!) || @user.authenticated?(params[:user][:password]))
             @token.use!
-            @user.save! if @new_user
+            @user.activate! if @user.state == 'pending'
             CustomerUser.find(:first, :conditions => {:user_id => @user.id, :customer_id => @customer.id}).activate!
 
             self.current_user = @user
@@ -201,8 +211,35 @@ class UsersController < ApplicationController
         @user.errors.add :password, "Incorrect password"
       end
     end
+
     @existing_customer = true
     render :action => :new
+  end
+
+  def validate_email
+
+    token = Token::EmailValidation.find_by_code params[:id]
+    user = User.find_by_id(token.param[:user_id])
+
+    token.transaction do
+
+      if token.valid_token? && user
+        user.activate!
+        token.use!
+        flash[:notice] = "Email confirmed"
+        redirect_to :controller => :customers, :action => :choose
+
+      else 
+        if user && user.state == 'active'
+          flash[:notice] = "Email previously confirmed"
+          redirect_to :controller => :customers, :action => :choose
+        else
+          flash[:error] = "Token " + token.errors[:base]
+          redirect_to :controller => :about
+        end
+      end
+    end
+
   end
 
 end

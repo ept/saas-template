@@ -11,7 +11,7 @@ class UserMailer < ActionMailer::Base
     setup_email(user)
     token = Token::EmailValidation.new_for_user!(user)
     @subject    = 'Please confirm your email address'
-    @body[:url]  = "http://go-test.it/users/confirm_account/#{token.code}"
+    @body[:url]  = "http://go-test.it/users/validate_email/#{token.code}"
   end
 
   def invitation(customer, user)
