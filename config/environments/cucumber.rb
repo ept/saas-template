@@ -21,3 +21,4 @@ config.gem "rspec",       :lib => false,        :version => ">=1.2.6" unless Fil
 config.gem "rspec-rails", :lib => 'spec/rails', :version => ">=1.2.6" unless File.directory?(File.join(Rails.root, 'vendor/plugins/rspec-rails'))
 
 $root_customers_directory = File::join RAILS_ROOT, "spec/customers/"
+$domain_name = "example.com"

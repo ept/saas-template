@@ -14,11 +14,12 @@ class ApplicationController < ActionController::Base
 
   def set_global_hostnames
     # Allow sessions to persist across subdomains
-    ActionController::Base.session_options[:domain] = SubdomainFu.host_without_subdomain(request.env['SERVER_NAME'])
+    ActionController::Base.session_options[:domain] = SubdomainFu.host_without_subdomain($domain_name)
+    SubdomainFu.tld_size = $domain_name.split('.').size - 1
 
     # Why doesn't rails do this itself...
-    ActionMailer::Base.default_url_options[:host] = request.env['SERVER_NAME']
-    ActionMailer::Base.default_url_options[:port] = request.env['SERVER_PORT']
+    ActionMailer::Base.default_url_options[:host] = $domain_name.sub /:.*$/,''
+    ActionMailer::Base.default_url_options[:port] = $domain_name.sub /^.*:/,''
   end
 
 end
