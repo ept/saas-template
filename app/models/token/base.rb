@@ -34,11 +34,11 @@ class Token::Base < ActiveRecord::Base
   end
 
   def overused?
-    max_uses and use_count >= max_uses or false
+    max_uses && use_count >= max_uses || false
   end
 
   def expired?
-    expires and expires < Time.current or false
+    expires && Time.current > expires || false
   end
 
   def transaction (&block)

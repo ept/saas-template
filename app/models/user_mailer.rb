@@ -21,6 +21,13 @@ class UserMailer < ActionMailer::Base
     @body[:url] = "http://#{customer.subdomain}.go-test.it/users/accept_invitation/#{token.code}"
     @body[:customer] = customer
   end
+
+  def password_reset(user)
+    setup_email user
+    token = Token::PasswordReset.new_for_user!(user)
+    @subject = "Reset your Go Test It password"
+    @body[:url] = "http://go-test.it/users/password_reset/#{token.code}"
+  end
   
   protected
     def setup_email(user)

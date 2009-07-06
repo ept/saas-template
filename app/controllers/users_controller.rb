@@ -1,6 +1,6 @@
 class UsersController < ApplicationController
 
-  outside_facing_actions = [:new, :forgotten_password, :accept_invitation, :validate_email]
+  outside_facing_actions = [:new, :forgotten_password, :accept_invitation, :validate_email, :password_reset]
   layout proc{|controller| outside_facing_actions.include?(controller.params[:action].to_sym) ? 'application' : 'customer_site'}
 
   before_filter :customer_login_required, :except => outside_facing_actions
@@ -240,6 +240,35 @@ class UsersController < ApplicationController
       end
     end
 
+  end
+
+  def password_reset
+
+    token = Token::PasswordReset.find_by_code params[:id]
+    @user = token.user
+
+    token.transaction do
+
+      if token.valid_token?
+        if @user && @user.can_reset_password?
+        
+          if request.post?
+            @user.password = params[:user][:password]
+            @user.password_confirmation = params[:user][:password_confirmation]
+            if params[:user][:password] == ""
+              @user.errors.add :password, "can't be blank"
+            elsif @user.save
+              token.use!
+              return redirect_to :controller => :customers, :action => :choose
+            end
+          end
+        else
+          flash[:error] = "You may not reset your password, please contact support."
+        end
+      else
+        flash[:error] = "Token " + token.errors[:base]
+      end
+    end
   end
 
 end
