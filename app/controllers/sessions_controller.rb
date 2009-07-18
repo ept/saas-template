@@ -28,7 +28,7 @@ class SessionsController < ApplicationController
         flash[:notice] = "Logged in successfully"
       end
 
-      redirect_to :controller => "customers", :action => "choose"
+      redirect_to :controller => "customers", :action => "choose", :return_to => params[:return_to]
     else
       note_failed_signin
       @email       = params[:email]

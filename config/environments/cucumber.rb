@@ -20,5 +20,8 @@ config.gem "webrat",      :lib => false,        :version => ">=0.4.4" unless Fil
 config.gem "rspec",       :lib => false,        :version => ">=1.2.6" unless File.directory?(File.join(Rails.root, 'vendor/plugins/rspec'))
 config.gem "rspec-rails", :lib => 'spec/rails', :version => ">=1.2.6" unless File.directory?(File.join(Rails.root, 'vendor/plugins/rspec-rails'))
 
+# Do not redirect to HTTPS URLs while testing
+config.https_login = false
+
 $root_customers_directory = File::join RAILS_ROOT, "spec/customers/"
 ActionController::Base.session_options[:domain] = "example.com"

@@ -2,7 +2,7 @@
 
 <% form_tag session_path do -%>
 <p><%= label_tag 'email' %><br />
-<%= text_field_tag 'email', @login %></p>
+<%= text_field_tag 'email', @email %></p>
 
 <p><%= label_tag 'password' %><br/>
 <%= password_field_tag 'password', nil %></p>
@@ -10,6 +10,7 @@
 <p><%= label_tag 'remember_me', 'Remember me' %>
 <%= check_box_tag 'remember_me', '1', @remember_me %></p>
 
+<%= hidden_field_tag 'return_to', params[:return_to] %>
 <p><%= submit_tag 'Log in' %></p>
 <% end -%>
 

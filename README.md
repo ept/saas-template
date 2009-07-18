@@ -12,12 +12,29 @@ Using this template in your application:
     $ git remote add saas git@github.com:ept/saas-template.git
     $ git pull saas master
 
-Resolve any merge conflicts, then do `git commit -a`. Create databases `myapp_development`
-and `myapp_test` (or whatever you called the app), tweak database config if necessary.
+Resolve any merge conflicts, then do `git commit -a`. When that is done, make sure git
+has downloaded all required submodules:
 
-Add the following line to `config/environment.rb` in the `Rails::Initializer.run` block:
+    $ git submodule init
+    $ git submodule update
+
+Create databases `myapp_development` and `myapp_test` (or whatever you called the app),
+tweak database config if necessary.
+
+Add the following to `config/environment.rb` just after the `require File.join(File.dirname(__FILE__), 'boot')` line:
+
+    # Include our custom configuration parameters (see lib/environment_config.rb)
+    require 'environment_config'
+
+and in the same file inside the `Rails::Initializer.run` block:
 
     config.gem "rubyist-aasm", :lib => 'aasm', :source => "http://gems.github.com"
+    config.active_record.observers = :user_observer
+
+Edit each of the `config/environments/*.rb` files and add the following lines:
+
+    # Set this to true if you want the login form to redirect to a https:// URL
+    config.https_login = false
 
 And add the following line right at the end of `config/environment.rb`:
 
@@ -61,10 +78,12 @@ Edit `config/routes.rb` and add the following:
     map.login '/login', :controller => 'sessions', :action => 'new'
     map.register '/register', :controller => 'users', :action => 'create'
     map.signup '/signup', :controller => 'customers', :action => 'new'
+    map.activate '/activate/:activation_code', :controller => 'users', :action => 'activate', :activation_code => nil
     map.welcome '/welcome', :controller => 'customers', :action => 'dashboard'
     map.forgotten_password '/forgotten_password', :controller => 'users', :action => 'forgotten_password'
 
     map.resources :users
+    #map.resources :users, :member => { :suspend => :put, :unsuspend => :put, :purge => :delete } # ???
 
     map.resource :session
 
@@ -73,14 +92,24 @@ Edit `config/routes.rb` and add the following:
     #
     # TODO: would be nicer to patch request_routing to interact with subdomain-fu and allow :subdomain => false
     map.root :controller => "customers", :conditions => { :subdomain => nil} # http://localhost/
-    map.root :controller => "customers", :conditions => { :subdomain => "go-test"} # http://go-test.it/
+    map.root :controller => "customers", :conditions => { :subdomain => "example"} # http://example.com/
+    map.root :controller => "customers", :conditions => { :subdomain => "www"} # http://www.example.com/
     map.root :controller => "customers"
 
 
 Edit each of in `config/environments/development.rb` and `production.rb`, adding a line:
 
-    ActionController::Base.session_options[:domain] = "go-test.local"   # development.rb
-    ActionController::Base.session_options[:domain] = "go-test.it"      # production.rb
+    ActionController::Base.session_options[:domain] = "example.local"   # development.rb
+    ActionController::Base.session_options[:domain] = "example.com"     # production.rb
+
+
+On your development machine, edit `/etc/hosts` and add a line like:
+
+    127.0.0.1 example.local www.example.local foo.example.local bar.example.local baz.example.local
+
+
+You may also need to edit `app/models/customer.rb` and add your domain name there
+(`example` if your full domain name is `example.com`).
 
 
 Edit `config/database.yml`: add `&TEST` to the line `test:` and append the following two lines:
@@ -89,10 +118,8 @@ Edit `config/database.yml`: add `&TEST` to the line `test:` and append the follo
       <<: *TEST
 
 
-Then continue:
+Then run the tests:
 
-    $ git submodule init
-    $ git submodule update
     $ rake db:migrate
     $ rake spec
     $ rake features
