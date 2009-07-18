@@ -65,7 +65,6 @@ class UsersController < ApplicationController
           link.activate!
           link.grant_admin!
 
-          Project.new(:customer => @customer, :name => @customer.subdomain.capitalize).save!
           @token.use!
 
           logout_keeping_session! if current_user
