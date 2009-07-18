@@ -64,8 +64,15 @@ module AuthenticatedSystem
     def access_denied
       respond_to do |format|
         format.html do
-          store_location
-          redirect_to :controller => 'sessions', :action => 'new'
+          if request.post?
+            render :template => 'sessions/new'
+          else
+            sign_in_link = {:controller => 'sessions', :action => 'new', :return_to => request.request_uri}
+            if Rails::configuration.https_login && request.protocol != 'https://'
+              sign_in_link[:protocol] = 'https://'
+            end
+            redirect_to sign_in_link
+          end
         end
         # format.any doesn't work in rails version < http://dev.rubyonrails.org/changeset/8987
         # Add any other API formats here.  (Some browsers, notably IE6, send Accept: */* and trigger 
@@ -77,20 +84,22 @@ module AuthenticatedSystem
       end
     end
 
-    # Store the URI of the current request in the session.
-    #
-    # We can return to this location by calling #redirect_back_or_default.
-    def store_location
-      session[:return_to] = request.request_uri
-    end
-
     # Redirect to the URI stored by the most recent store_location call or
     # to the passed default.  Set an appropriately modified
     #   after_filter :store_location, :only => [:index, :new, :show, :edit]
     # for any controller you want to be bounce-backable.
     def redirect_back_or_default(default)
-      redirect_to(session[:return_to] || default)
-      session[:return_to] = nil
+      if params[:return_to]
+        redirect_to safe_url(params[:return_to])
+      else
+        redirect_to default
+      end
+    end
+
+    # Sanitises a URL (which must start with a '/') to make it safe to include as a header
+    # in a HTTP redirect response.
+    def safe_url(url)
+      (url =~ /^\/[\w!\$%&\(\)\*\+,\-\.\/:;<=>\?@\[\]\^\{\}\|~]+$/) ? url : '/'
     end
 
     # Inclusion hook to make #current_user and #logged_in?
