@@ -69,7 +69,9 @@ describe AccessControlTestController do
           elsif (login_reqd_status == :login_is_required && logged_in_status == :i_am_not_logged_in)
             if ['html', ''].include? format
               it "redirects me to the log in page" do
-                response.should redirect_to('/login')
+                format_query = format.to_s.to_query('format')
+                return_to = "/access_control_test/#{login_reqd_status}?#{format_query}"
+                response.should redirect_to('http://test.host/login?' + return_to.to_query('return_to'))
               end
             else
               it "returns 'Access denied' and a 406 (Access Denied) status code" do
