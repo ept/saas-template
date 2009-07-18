@@ -25,8 +25,8 @@ describe Token::Base do
   end
 
   it "should return a per-subclass singleton for invalid token" do
-    Token::Base.invalid_token.should equal Token::Base.invalid_token
-    Token::Test.invalid_token.should equal Token::Test.invalid_token
+    Token::Base.invalid_token.should equal(Token::Base.invalid_token)
+    Token::Test.invalid_token.should equal(Token::Test.invalid_token)
     Token::Test.invalid_token.kind_of?(Token::Test).should == true
     Token::Base.invalid_token.kind_of?(Token::Test).should == false
   end

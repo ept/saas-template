@@ -27,6 +27,7 @@ describe UsersController do
       @new_user.should_receive(:save).any_number_of_times.and_return(true)
       @widget.should_receive(:users).any_number_of_times.and_return([@current_user])
       controller.should_receive(:customer_login_required).any_number_of_times.and_return(true)
+      controller.should_receive(:customer_admin_required).any_number_of_times.and_return(true)
       controller.should_receive(:current_customer).any_number_of_times.and_return(@widget)
       controller.should_receive(:current_user).any_number_of_times.and_return(@current_user)
     end
@@ -168,4 +169,5 @@ describe UsersController do
       flash[:error].should =~ /we couldn't find/
     end
   end
+
 end

@@ -219,7 +219,7 @@ describe User do
     user = create_user(:password => nil, :password_confirmation => nil)
     user.should be_passive
     user.update_attributes(:password => 'new password', :password_confirmation => 'new password')
-    user.register!
+    # user.register! -- now happens automatically
     user.should be_pending
   end
 

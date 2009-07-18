@@ -13,7 +13,6 @@
 <% end %>
 
 <% form_for :user, @user do |fu| %>
-<% fields_for :customer, @customer do |fc| %>
 
   <%= error_messages_for :user, :customer, :token %>
 
@@ -27,7 +26,11 @@
       <%= form_row fu, :password, "Your current password", :type => :password %>
     <% end %>
 
-    <%= form_row fc, :name, "Company name (optional)" %>
+    <% unless @existing_customer %>
+      <% fields_for :customer, @customer do |fc| %>
+        <%= form_row fc, :name, "Company name (optional)" %>
+      <% end %>
+    <% end %>
 
     <tr>
       <th></th>
@@ -36,7 +39,6 @@
     </tr>
   </table>
 
-<% end %>
 <% end %>
 
 <% unless @new_user %>

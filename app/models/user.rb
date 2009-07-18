@@ -22,14 +22,12 @@ class User < ActiveRecord::Base
   validates_uniqueness_of   :email
   validates_format_of       :email,    :with => Authentication.email_regex, :message => Authentication.bad_email_message
 
-  
-
   # HACK HACK HACK -- how to do attr_accessible from here?
   # prevents a user from submitting a crafted form that bypasses activation
   # anything else you want your user to change should be added here.
   attr_accessible :email, :name, :password, :password_confirmation
 
-
+  before_save :activate_when_password_set
 
   # Authenticates a user by their login name and unencrypted password.  Returns the user or nil,
   # or throws +UserSuspended+ if the account is suspended.
@@ -98,7 +96,7 @@ class User < ActiveRecord::Base
   end
 
   def password_reset_email!
-    # TODO
+    UserMailer.deliver_password_reset self
   end
 
   protected
@@ -108,5 +106,10 @@ class User < ActiveRecord::Base
     self.activation_code = self.class.make_token
   end
 
+  def activate_when_password_set
+    if passive? && password != nil
+      register!
+    end
+  end
 
 end

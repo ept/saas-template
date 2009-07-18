@@ -7,7 +7,7 @@ describe Customer do
 
   it "should have a subdomain" do
     @ept.subdomain = ""
-    @ept.should have_at_least(1).error_on :subdomain
+    @ept.should have_at_least(1).error_on(:subdomain)
   end
 
   it "should lowercase subdomain" do
