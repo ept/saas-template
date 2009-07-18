@@ -29,16 +29,31 @@ Add the following to `config/environment.rb` just after the `require File.join(F
 and in the same file inside the `Rails::Initializer.run` block:
 
     config.gem "rubyist-aasm", :lib => 'aasm', :source => "http://gems.github.com"
-    config.active_record.observers = :user_observer
+    config.active_record.observers = :mailing_observer
 
-Edit each of the `config/environments/*.rb` files and add the following lines:
+Add the following to `config/environments/development.rb`:
+
+    # Do not redirect to HTTPS URLs during development
+    config.https_login = false
+
+    # Set the base domain name under which our site is hosted
+    config.domain_name = 'example.local'
+
+Add the following to `config/environments/test.rb`:
+
+    # Do not redirect to HTTPS URLs while testing
+    config.https_login = false
+
+    # Set the base domain name under which our site is hosted
+    config.domain_name = 'test.host'
+
+Add the following to `config/environments/production.rb`:
 
     # Set this to true if you want the login form to redirect to a https:// URL
     config.https_login = false
 
-And add the following line right at the end of `config/environment.rb`:
-
-    SubdomainFu.tld_sizes = {:development => 1, :test => 1, :production => 1 }
+    # Set the base domain name under which our site is hosted
+    config.domain_name = 'example.com' # Set to your real domain name!
 
 Edit `config/initializers/site_keys.rb` and change the value for `REST_AUTH_SITE_KEY`
 to something unique and random.

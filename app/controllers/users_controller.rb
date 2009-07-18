@@ -1,6 +1,8 @@
 class UsersController < ApplicationController
 
-  before_filter :customer_login_required, :except => [:new, :forgotten_password]
+  before_filter :customer_login_required, :except => [:new, :forgotten_password, :accept_invitation, :validate_email, :password_reset]
+  before_filter :customer_admin_required, :only => [:index, :create]
+
 
   # This is misleadingly placed. Should probably be in the customers (or customer_signup) controller
   # it is step two of the action that started by finding the subdomain, email and invitation code in 
@@ -59,11 +61,18 @@ class UsersController < ApplicationController
     @token.transaction do
       if @token.valid_for?(@customer, @user)
         if ((@new_user && @user.register!) || @user.authenticated?(params[:user][:password])) && @customer.save
-          CustomerUser.new(:customer => @customer, :user => @user).grant_admin!
+          link = CustomerUser.new(:customer => @customer, :user => @user)
+          link.activate!
+          link.grant_admin!
+
+          Project.new(:customer => @customer, :name => @customer.subdomain.capitalize).save!
           @token.use!
+
+          logout_keeping_session! if current_user
+          self.current_user = @user 
+
           flash[:notice] = "Done!"
-          self.current_user = @user
-          redirect_to :controller => "customers", :action => "dashboard"
+          redirect_to :controller => "customers", :action => "welcome"
         end
       else
         flash[:error] = "Token " + @token.errors_on_base
@@ -158,6 +167,108 @@ class UsersController < ApplicationController
     else
       flash[:error] = "Sorry, we couldn't find that email address in our database."
       redirect_to forgotten_password_path(:email => @email)
+    end
+  end
+
+  # Accept an invitation to join a customer
+  def accept_invitation
+
+    @token = Token::Invitation.find_by_code params[:id]
+
+    @customer = Customer.find_by_subdomain @token.param[:subdomain]
+    @user = User.find_by_email @token.param[:email]
+
+    if current_user && @user != current_user
+      logout_keeping_session!
+    end
+
+    @new_user = @user.state == 'passive'
+    if request.post?
+      @token.transaction do
+        if @token.valid_for?(@customer, @user) 
+          if @new_user
+            # For some reason rails won't give this error
+            @user.errors.add(:password, "can't be blank") if params[:user][:password] == ""
+            @user.password = params[:user][:password]
+            @user.password_confirmation = params[:user][:password_confirmation]
+          end
+
+          if ((@new_user && @user.register!) || @user.authenticated?(params[:user][:password]))
+            @token.use!
+            @user.activate! if @user.state == 'pending'
+            CustomerUser.find(:first, :conditions => {:user_id => @user.id, :customer_id => @customer.id}).activate!
+
+            self.current_user = @user
+            flash[:notice] = "Done!"
+            return redirect_to(:controller => "customers", :action => "welcome")
+          end
+        else
+          flash[:error] = "Token " + @token.errors[:base]
+          return redirect_to(:action => :accept_invitation)
+        end
+      end
+
+      if !@new_user && !@user.authenticated?(params[:user][:password])
+        @user.errors.add :password, "Incorrect password"
+      end
+    end
+
+    @existing_customer = true
+    render :action => :new
+  end
+
+  def validate_email
+    token = Token::EmailValidation.find_by_code params[:id]
+    user = User.find_by_id(token.param[:user_id])
+
+    token.transaction do
+
+      if token.valid_token? && user
+        user.activate!
+        token.use!
+        self.current_user = user
+        flash[:notice] = "Email confirmed"
+        redirect_to :controller => :customers, :action => :choose
+
+      else 
+        if user && user.state == 'active'
+          self.current_user = user
+          flash[:notice] = "Email previously confirmed"
+          redirect_to :controller => :customers, :action => :choose
+        else
+          flash[:error] = "Token " + token.errors[:base]
+          redirect_to :controller => :about
+        end
+      end
+    end
+  end
+
+  def password_reset
+    token = Token::PasswordReset.find_by_code params[:id]
+    @user = token.user
+
+    token.transaction do
+
+      if token.valid_token?
+        if @user && @user.can_reset_password?
+        
+          if request.post?
+            @user.password = params[:user][:password]
+            @user.password_confirmation = params[:user][:password_confirmation]
+            if params[:user][:password] == ""
+              @user.errors.add :password, "can't be blank"
+            elsif @user.save
+              token.use!
+              self.current_user = @user
+              return redirect_to(:controller => :customers, :action => :choose)
+            end
+          end
+        else
+          flash[:error] = "You may not reset your password, please contact support."
+        end
+      else
+        flash[:error] = "Token " + token.errors[:base]
+      end
     end
   end
 end
