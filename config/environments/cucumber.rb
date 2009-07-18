@@ -23,4 +23,5 @@ config.gem "rspec-rails", :lib => 'spec/rails', :version => ">=1.2.6" unless Fil
 # Do not redirect to HTTPS URLs while testing
 config.https_login = false
 
-ActionController::Base.session_options[:domain] = "example.com"
+# Set the base domain name under which our site is hosted
+config.domain_name = 'example.com'
