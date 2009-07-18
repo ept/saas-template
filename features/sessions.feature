@@ -18,7 +18,7 @@ Story: Logging in
     Given an anonymous user
     And a customer with subdomain: 'customer' exists
     When she goes on subdomain customer to /
-    Then she should be redirected to /login
+    Then she should be redirected to http://www.example.com/login?return_to=%2F
     When she follows that redirect!
     Then she should see a <form> containing a textfield: Email, password: Password, and submit: 'Log in'
 
