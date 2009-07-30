@@ -93,8 +93,18 @@ module AuthenticatedSystem
         redirect_to default
       else
         url = safe_url(params[:return_to])
+        if extra_options.has_key? :subdomain
+          subdomain = extra_options[:subdomain]
+          extra_options.delete :subdomain
+        else
+          subdomain = current_subdomain
+        end
         url << (url.include?('?') ? '&' : '?') + extra_options.to_query unless extra_options.blank?
-        redirect_to url
+        if SubdomainFu.needs_rewrite?(subdomain, request.host) then
+          redirect_to "http://#{SubdomainFu.rewrite_host_for_subdomains(subdomain, request.host)}#{url}"
+        else
+          redirect_to url
+        end
       end
     end
 
