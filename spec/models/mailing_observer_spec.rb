@@ -29,7 +29,7 @@ describe MailingObserver do
       mail = ActionMailer::Base.deliveries[0]
       mail.to.should include('asdf@asdf.com')
       mail.body.should =~ /activate your account/
-      extract_token_code = /https?:\/\/#{Rails::configuration.domain_name}\/users\/validate_email\/(\w+)/
+      extract_token_code = /https?:\/\/#{Rails::configuration.domain_name}\/(\w+)/
       mail.body.should =~ extract_token_code
 
       mail.body =~ extract_token_code
@@ -51,7 +51,7 @@ describe MailingObserver do
       mail = ActionMailer::Base.deliveries[0]
       mail.to.should include('fdsa@fdsa.com')
       mail.body.should =~ /You have been invited/
-      extract_token_code = /https?:\/\/#{@customer.subdomain}.#{Rails::configuration.domain_name}\/users\/accept_invitation\/(\w+)/
+      extract_token_code = /https?:\/\/#{@customer.subdomain}.#{Rails::configuration.domain_name}\/(\w+)/
       mail.body.should =~ extract_token_code
 
       mail.body =~ extract_token_code
@@ -73,7 +73,7 @@ describe MailingObserver do
       mail = ActionMailer::Base.deliveries[0]
       mail.to.should include('quentin@example.com')
       mail.body.should =~ /You have been invited/
-      extract_token_code = /https?:\/\/#{@customer.subdomain}.#{Rails::configuration.domain_name}\/users\/accept_invitation\/(\w+)/
+      extract_token_code = /https?:\/\/#{@customer.subdomain}.#{Rails::configuration.domain_name}\/(\w+)/
       mail.body.should =~ extract_token_code
 
       mail.body =~ extract_token_code

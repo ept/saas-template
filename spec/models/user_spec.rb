@@ -347,7 +347,7 @@ describe User do
       mail = ActionMailer::Base.deliveries[0]
       mail.to.should include('quentin@example.com')
       mail.body.should =~ /reset your password/
-      extract_token_code = /https?:\/\/#{Rails::configuration.domain_name}\/users\/password_reset\/(\w+)/
+      extract_token_code = /https?:\/\/#{Rails::configuration.domain_name}\/(\w+)/
       mail.body.should =~ extract_token_code
 
       mail.body =~ extract_token_code

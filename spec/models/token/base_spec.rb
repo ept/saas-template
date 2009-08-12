@@ -3,6 +3,9 @@ describe Token::Base do
 
   class Token::Test < Token::Base
   end
+  class Token::Other < Token::Base
+  end
+
   before :each do
     @token = Token::Test.new(:code => "test")
     @token.should be_valid
@@ -99,7 +102,8 @@ describe Token::Base do
 
   it "should find a token by correct class" do
     Token::Test.find_by_code('test').should == @token
-    Token::Base.find_by_code('test').should == Token::Base.invalid_token
+    Token::Base.find_by_code('test').should == @token
+    Token::Other.find_by_code('test').should == Token::Other.invalid_token
   end
 
   it "should return an invalid token when one could not be found" do

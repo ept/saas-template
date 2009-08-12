@@ -1,6 +1,16 @@
 # Methods added to this helper will be available to all templates in the application.
 module ApplicationHelper
 
+  # Returns the full URL for a token, for use in emails.
+  def token_url(token, options={})
+    options = {:protocol => 'http'}.merge(options.symbolize_keys)
+    url = options.delete(:protocol) + '://'
+    url << options.delete(:subdomain) + '.' if options[:subdomain]
+    url << Rails::configuration.domain_name + '/' + token.code
+    url << '?' + options.to_param unless options.empty?
+    url
+  end
+
   # Assuming your form is a table with haedings to the left, and errors to the right
   def form_row(f, field, label, params = {})
     type = (params[:type] || :text).to_s + '_field'

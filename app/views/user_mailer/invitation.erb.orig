@@ -1,0 +1,8 @@
+Hi,
+
+You have been invited to join the <%= @customer.name %> team.
+
+<%= url_for :controller => :users, :action => :accept_invitation, :only_path => false, :subdomain => @customer.subdomain, :id => @token.code %>
+
+Yours
+http://<%= Rails::configuration.domain_name %>
