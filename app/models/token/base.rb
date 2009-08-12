@@ -1,22 +1,14 @@
 class Token::Base < ActiveRecord::Base
 
+  extend Authentication::ModelClassMethods # provides make_token method
+
   set_table_name :tokens
 
   validates_presence_of :code
   validates_uniqueness_of :code
   validates_presence_of :type
 
-  def param
-    if read_attribute :param
-      Marshal.load read_attribute(:param)
-    else
-      nil
-    end
-  end
-  
-  def param=(value)
-    write_attribute :param, Marshal.dump(value)
-  end
+  serialize :param
 
   def valid_token?
     @in_checked_transaction = @in_transaction
@@ -41,10 +33,13 @@ class Token::Base < ActiveRecord::Base
     expires && Time.current > expires || false
   end
 
-  def transaction (&block)
+  def transaction(&block)
     @in_transaction = true
-    ActiveRecord::Base.transaction &block
-    @in_transaction = @in_checked_transaction = false
+    begin
+      ActiveRecord::Base.transaction &block
+    ensure
+      @in_transaction = @in_checked_transaction = false
+    end
   end
 
   def use!
@@ -56,10 +51,14 @@ class Token::Base < ActiveRecord::Base
     end
   end
 
+  # Returns a token with a given code, or the +invalid_token+ singleton if none was found.
   def self.find_by_code(code)
     Token::Base.find(:first, :conditions => {:code => code, :type => self.to_s}) or self.invalid_token
   end
 
+  # Singleton instance of this class, representing an invalid token. Returned by +find_by_code+
+  # if no matching token can be found; useful because it simplifies controller logic.
+  # Each subclass of Token::Base has its own invalid_token object.
   def self.invalid_token
     @@invalid_tokens ||= {}
     return @@invalid_tokens[self] if @@invalid_tokens[self]
@@ -79,8 +78,7 @@ class Token::Base < ActiveRecord::Base
   # Pseudorandom alphanumeric codes that are very probably unique
   def self.new_with_code
     token = self.new
-    token.code = (Time.now.to_f.to_s.reverse + rand.to_s).gsub('.','').to_i.to_s(36)
+    token.code = make_token
     token
   end
-
 end
