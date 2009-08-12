@@ -87,14 +87,14 @@ for your new site key:
     File.open('spec/fixtures/users.yml', 'w'){|f| f.write(rendered)}
 
 
-Edit `config/routes.rb` and add the following:
+Edit `config/routes.rb` and add the following (assuming you have a marketing site exposed
+by a controller called `AboutController`):
 
-    map.logout '/logout', :controller => 'sessions', :action => 'destroy'
-    map.login '/login', :controller => 'sessions', :action => 'new'
-    map.register '/register', :controller => 'users', :action => 'create'
-    map.signup '/signup', :controller => 'customers', :action => 'new'
-    map.activate '/activate/:activation_code', :controller => 'users', :action => 'activate', :activation_code => nil
-    map.welcome '/welcome', :controller => 'customers', :action => 'dashboard'
+    map.logout   '/logout',   :controller => 'sessions',  :action => 'destroy'
+    map.login    '/login',    :controller => 'sessions',  :action => 'new'
+    map.register '/register', :controller => 'users',     :action => 'create'
+    map.signup   '/signup',   :controller => 'customers', :action => 'new'
+    map.welcome  '/welcome',  :controller => 'customers', :action => 'dashboard'
     map.forgotten_password '/forgotten_password', :controller => 'users', :action => 'forgotten_password'
 
     map.resources :users
@@ -106,13 +106,23 @@ Edit `config/routes.rb` and add the following:
     # For the top-level site we want the about controller, else we want the customers controller
     #
     # TODO: would be nicer to patch request_routing to interact with subdomain-fu and allow :subdomain => false
-    map.root :controller => "customers", :conditions => { :subdomain => nil} # http://localhost/
-    map.root :controller => "customers", :conditions => { :subdomain => "example"} # http://example.com/
-    map.root :controller => "customers", :conditions => { :subdomain => "www"} # http://www.example.com/
-    map.root :controller => "customers"
+    map.root :controller => "about", :conditions => { :subdomain => nil}       # http://localhost/
+    map.root :controller => "about", :conditions => { :subdomain => "example"} # http://example.com/
+    if %w(production development).include? RAILS_ENV
+      map.root :controller => "about", :conditions => { :subdomain => "www"}   # http://www.example.com/
+    end
+    map.root :controller => "customers" # customer subdomains
+
+    # Default routes
+    map.connect ':controller/:action/:id'
+    map.connect ':controller/:action/:id.:format'
+
+    # Map tokens to http://example.com/tokencode -- must be the last entry in routes.rb, after default routes
+    map.connect ':code', :controller => 'tokens', :action => 'show', :conditions => { :subdomain => nil }
+    map.connect ':code', :controller => 'tokens', :action => 'show', :conditions => { :subdomain => "example" }
 
 
-Edit each of in `config/environments/development.rb` and `production.rb`, adding a line:
+Edit `config/environments/development.rb` and `production.rb`, adding one line to each:
 
     ActionController::Base.session_options[:domain] = "example.local"   # development.rb
     ActionController::Base.session_options[:domain] = "example.com"     # production.rb
