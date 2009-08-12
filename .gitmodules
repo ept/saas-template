@@ -4,9 +4,6 @@
 [submodule "vendor/plugins/rspec_rails"]
 	path = vendor/plugins/rspec_rails
 	url = git://github.com/dchelimsky/rspec-rails.git
-[submodule "vendor/plugins/restful_authentication"]
-	path = vendor/plugins/restful_authentication
-	url = git://github.com/technoweenie/restful-authentication.git
 [submodule "vendor/plugins/base_without_table"]
 	path = vendor/plugins/base_without_table
 	url = git://gitorious.org/activerecord-basewithouttable-for-rails-2/mainline.git
