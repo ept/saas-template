@@ -28,6 +28,10 @@ class UsersController < ApplicationController
 
       @user = User.new(params[:user])
       @user.email ||= params[:email]
+      if params[:user]
+        @user.password = params[:user][:password]
+        @user.password_confirmation = params[:user][:password_confirmation]
+      end
 
       # Can only happen if someone is mucking around
       if !@user.valid? && @user.errors[:email]
