@@ -1,0 +1,30 @@
+<% form_for user do |f| %>
+    <%= f.error_messages %>
+
+    <table class="noborder" style="width: auto">
+        <%= form_row f, :name, 'Display name' %>
+        <%= form_row f, :email, 'Email address' %>
+
+        <% if user == current_user %>
+            <tr>
+                <th><%= f.label :password, user.password_required? ? 'Set your password' : 'Change password' %></th>
+                <td><%= f.password_field :password %></td>
+                <td>
+                    <% unless user.password_required? %>(leave blank to keep unchanged) <% end %>
+                    <%= f.error_message_on :subdomain %>
+                </td>
+            </tr>
+            <%= form_row f, :password_confirmation, 'Confirm password', :type => :password %>
+        <% end %>
+
+        <tr>
+            <th><%= f.label :time_zone, 'Time zone' %></th>
+            <td><%= f.time_zone_select :time_zone %></td>
+        </tr>
+
+        <tr>
+            <th></th>
+            <td><%= f.submit 'Update details' %></td>
+        </tr>
+    </table>
+<% end %>

@@ -139,8 +139,7 @@ class UsersController < ApplicationController
     end
 
     # Other attributes
-    @user.name = params[:user][:name]
-    @user.email = params[:user][:email]
+    @user.attributes = params[:user]
 
     if @user.save
       flash[:notice] = 'Details have been updated.'

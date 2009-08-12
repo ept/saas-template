@@ -120,7 +120,10 @@ describe User do
 
   describe "updating details" do
     it 'sets a new password if a password was given' do
-      users(:quentin).update_attributes(:password => 'new password', :password_confirmation => 'new password')
+      quentin = users(:quentin)
+      quentin.password = 'new password'
+      quentin.password_confirmation = 'new password'
+      quentin.save!
       User.authenticate('quentin@example.com', 'new password').should == users(:quentin)
     end
 
@@ -218,7 +221,9 @@ describe User do
   it 'registers passive user' do
     user = create_user(:password => nil, :password_confirmation => nil)
     user.should be_passive
-    user.update_attributes(:password => 'new password', :password_confirmation => 'new password')
+    user.password = 'new password'
+    user.password_confirmation = 'new password'
+    user.save!
     # user.register! -- now happens automatically
     user.should be_pending
   end
@@ -348,7 +353,10 @@ describe User do
 
 protected
   def create_user(options = {})
-    record = User.new({:email => 'quire@example.com', :password => 'quire69', :password_confirmation => 'quire69' }.merge(options))
+    options = {:email => 'quire@example.com', :password => 'quire69', :password_confirmation => 'quire69' }.merge(options)
+    record = User.new(options)
+    record.password = options[:password] # not mass assignable
+    record.password_confirmation = options[:password_confirmation]
     record.register!
     record
   end

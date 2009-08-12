@@ -21,9 +21,12 @@ describe UsersController do
     before :each do
       @widget = mock_model Customer, {:subdomain => "widget"}
       @current_user = mock_model User, {:email => 'current.user@example.com', :customers => [@widget]}
+      @current_user.should_receive(:time_zone).any_number_of_times.and_return('London')
       @existing_user = mock_model User, {:email => 'existing.user@example.com', :customers => []}
+      @existing_user.should_receive(:time_zone).any_number_of_times.and_return('London')
       @existing_user.should_receive(:save).any_number_of_times.and_return(true)
       @new_user = mock_model User, {:email => 'new.user@example.com', :customers => []}
+      @new_user.should_receive(:time_zone).any_number_of_times.and_return('London')
       @new_user.should_receive(:save).any_number_of_times.and_return(true)
       @widget.should_receive(:users).any_number_of_times.and_return([@current_user])
       controller.should_receive(:customer_login_required).any_number_of_times.and_return(true)
@@ -61,6 +64,7 @@ describe UsersController do
       @admin.should_receive(:link_to).any_number_of_times.and_return(@admin_role)
       @admin.should_receive(:is_admin_for?).any_number_of_times.and_return(true)
       @admin.should_receive(:can_edit_user?).any_number_of_times.and_return(true)
+      @admin.should_receive(:time_zone).any_number_of_times.and_return('London')
 
       @user_role = mock_model CustomerUser
       @user = mock_model User
@@ -68,6 +72,7 @@ describe UsersController do
       @user.should_receive(:is_admin_for?).any_number_of_times.and_return(false)
       @user.should_receive(:can_edit_user?).with(@user, @widget).any_number_of_times.and_return(true)
       @user.should_receive(:can_edit_user?).with(@admin, @widget).any_number_of_times.and_return(false)
+      @user.should_receive(:time_zone).any_number_of_times.and_return('London')
 
       controller.should_receive(:customer_login_required).any_number_of_times.and_return(true)
       controller.should_receive(:current_customer).any_number_of_times.and_return(@widget)
@@ -76,8 +81,7 @@ describe UsersController do
     it "should allow a user to change their own details and password" do
       controller.should_receive(:current_user).any_number_of_times.and_return(@user)
       User.should_receive(:find).and_return(@user)
-      @user.should_receive(:name=).with('john smith')
-      @user.should_receive(:email=).with('blah@blah.com')
+      @user.should_receive(:attributes=)
       @user.should_receive(:password=).with('blahblah')
       @user.should_receive(:password_confirmation=).with('blahblah')
       @user.should_receive(:save).and_return(true)
@@ -90,8 +94,7 @@ describe UsersController do
     it "should not allow an admin to change another user's password" do
       controller.should_receive(:current_user).any_number_of_times.and_return(@admin)
       User.should_receive(:find).and_return(@user)
-      @user.should_receive(:name=).with('john smith')
-      @user.should_receive(:email=).with('blah@blah.com')
+      @user.should_receive(:attributes=)
       @user.should_not_receive(:password=)
       @user.should_receive(:save).and_return(true)
       post :update, :user => {:name => 'john smith', :email => 'blah@blah.com',
@@ -103,8 +106,7 @@ describe UsersController do
     it "should allow an admin to grant admin permissions" do
       controller.should_receive(:current_user).any_number_of_times.and_return(@admin)
       User.should_receive(:find).and_return(@user)
-      @user.should_receive(:name=).with('john smith')
-      @user.should_receive(:email=).with('blah@blah.com')
+      @user.should_receive(:attributes=)
       @user.should_receive(:save).and_return(true)
       @user_role.should_receive(:grant_admin!)
       post :update, :user => {:name => 'john smith', :email => 'blah@blah.com'}, :grant_admin => '1'
@@ -115,8 +117,7 @@ describe UsersController do
     it "should allow an admin to revoke admin permissions" do
       controller.should_receive(:current_user).any_number_of_times.and_return(@admin)
       User.should_receive(:find).and_return(@user)
-      @user.should_receive(:name=).with('john smith')
-      @user.should_receive(:email=).with('blah@blah.com')
+      @user.should_receive(:attributes=)
       @user.should_receive(:save).and_return(true)
       @user_role.should_receive(:revoke_admin!)
       post :update, :user => {:name => 'john smith', :email => 'blah@blah.com'}, :revoke_admin => '1'
@@ -128,7 +129,7 @@ describe UsersController do
       controller.should_receive(:current_user).any_number_of_times.and_return(@user)
       User.should_receive(:find).and_return(@admin)
       lambda {
-        post :update, :user => {:name => 'john smith', :email => 'blah@blah.com'}, :revoke_admin => '1'
+        post :update, :user => {:name => 'john smith', :email => 'blah@blah.com'}, :grant_admin => '1'
       }.should raise_error(ActiveRecord::RecordNotFound)
     end
   end

@@ -9,7 +9,7 @@
     <p>This user has been invited, but has not yet created a password.</p>
 <% end %>
 
-<% if @user.link_to(current_customer).role == 'Admin' %>
+<% if @user.link_to(current_customer).role == 'admin' %>
     <p>This user is an admin for <%= h current_customer.name %>.</p>
 <% end %>
 

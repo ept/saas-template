@@ -5,21 +5,17 @@ class ApplicationController < ActionController::Base
   include AuthenticatedSystem
   include CustomerDomains
   helper :all # include all helpers, all the time
+  helper_method :current_customer
   protect_from_forgery # See ActionController::RequestForgeryProtection for details
 
   # Scrub sensitive parameters from your log
   # filter_parameter_logging :password
-  
-  before_filter :set_global_hostnames
 
-  def set_global_hostnames
-    # Allow sessions to persist across subdomains
-    ActionController::Base.session_options[:domain] = $domain_name
-    SubdomainFu.tld_size = $domain_name.split('.').size - 1
+  before_filter :set_timezone
 
-    # Why doesn't rails do this itself...
-    ActionMailer::Base.default_url_options[:host] = $domain_name.sub /:.*$/,''
-    ActionMailer::Base.default_url_options[:port] = $domain_name.sub /^.*:/,'' if $domain_name.index(":")
+  protected
+
+  def set_timezone
+    Time.zone = current_user.time_zone if current_user
   end
-
 end

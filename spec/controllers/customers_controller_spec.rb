@@ -18,6 +18,7 @@ describe CustomersController do
       @marthynn = mock_model User, {:customers => countable([@ept, @corpus])}
 
       [@hasni, @newb, @marthynn].each do |user|
+        user.should_receive(:time_zone).any_number_of_times.and_return('London')
         [@ept, @corpus].each do |customer|
           CustomerUser.should_receive(:linked?).any_number_of_times.with(customer, user).and_return(user.customers.include?(customer))
         end

@@ -15,6 +15,7 @@ module AuthenticatedTestHelper
       :name   => 'U. Surname',
       :to_xml => "User-in-XML", :to_json => "User-in-JSON", 
       :errors => [])
+    user.should_receive(:time_zone).any_number_of_times.and_return('London')
     user
   end  
 end
