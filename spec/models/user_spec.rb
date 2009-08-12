@@ -21,12 +21,6 @@ describe User do
       @creating_user.should change(User, :count).by(1)
     end
 
-    it 'initializes #activation_code' do
-      @creating_user.call
-      @user.reload
-      @user.activation_code.should_not be_nil
-    end
-
     it 'starts in pending state' do
       @creating_user.call
       @user.reload
@@ -256,18 +250,6 @@ describe User do
     it 'reverts to active state' do
       @user.unsuspend!
       @user.should be_active
-    end
-
-    it 'reverts to passive state if activation_code and activated_at are nil' do
-      User.update_all :activation_code => nil, :activated_at => nil
-      @user.reload.unsuspend!
-      @user.should be_passive
-    end
-
-    it 'reverts to pending state if activation_code is set and activated_at is nil' do
-      User.update_all :activation_code => 'foo-bar', :activated_at => nil
-      @user.reload.unsuspend!
-      @user.should be_pending
     end
   end
   

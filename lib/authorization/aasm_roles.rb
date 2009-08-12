@@ -12,7 +12,7 @@ module Authorization
         aasm_column :state
         aasm_initial_state :initial => :pending
         aasm_state :passive
-        aasm_state :pending, :enter => :make_activation_code
+        aasm_state :pending
         aasm_state :active,  :enter => :do_activate
         aasm_state :suspended
         aasm_state :deleted, :enter => :do_delete
@@ -34,9 +34,7 @@ module Authorization
         end
 
         aasm_event :unsuspend do
-          transitions :from => :suspended, :to => :active,  :guard => Proc.new {|u| !u.activated_at.blank? }
-          transitions :from => :suspended, :to => :pending, :guard => Proc.new {|u| !u.activation_code.blank? }
-          transitions :from => :suspended, :to => :passive
+          transitions :from => :suspended, :to => :active
         end
       end
     end
@@ -49,14 +47,13 @@ module Authorization
       def recently_activated?
         @activated
       end
+
       def do_delete
         self.deleted_at = Time.now.utc
       end
 
       def do_activate
         @activated = true
-        self.activated_at = Time.now.utc
-        self.deleted_at = self.activation_code = nil
       end
     end # instance methods
   end
