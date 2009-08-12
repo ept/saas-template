@@ -60,10 +60,10 @@ class UsersController < ApplicationController
     end
 
     # We need a token to do this for now
-    @token = Token::Invitation.find_by_code params[:invitation_code]
+    @token = Token::BetaInvitation.find_by_code params[:invitation_code]
 
     @token.transaction do
-      if @token.valid_for?(@customer, @user)
+      if @token.valid_token?
         if ((@new_user && @user.register!) || @user.authenticated?(params[:user][:password])) && @customer.save
           link = CustomerUser.new(:customer => @customer, :user => @user)
           link.activate!

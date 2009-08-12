@@ -1,4 +1,7 @@
 class UserMailer < ActionMailer::Base
+
+  helper :application
+
   def activation(user)
     setup_email(user)
     @body[:token] = Token::EmailValidation.new_for_user!(user)

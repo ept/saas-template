@@ -70,4 +70,16 @@ Story: New customer signup
     And she enters 'ab48d' as invitation code
     And he clicks submit
     Then he should be at the 'customers/new' page
-    And he should see a validation error 'Sorry, we could not recognise this invitation code.'
+    And he should see a validation error 'Sorry, we could not recognise this code.'
+
+  Scenario: Invitation code can be taken from a URL keyword
+    Given an anonymous user
+    And no customer with subdomain: 'blah' exists
+    And an invitation token with code: 'ab48d' exists
+    When he goes to /ab48d
+    And he goes to /signup
+    And he enters 'blah' as subdomain
+    And he enters 'me@example.com' as email
+    And he clicks submit
+    Then he should be on subdomain blah at 'users/new'
+    Then he should see a <form> containing a textfield: 'Your name (optional)', password: 'Your new password', password: 'Confirm your password', textfield: 'Company name (optional)', submit: 'Set up account'

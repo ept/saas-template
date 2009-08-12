@@ -23,11 +23,11 @@ Given "'$email' is logged in" do |email|
 end
 
 Given "$an invitation token with code: '(.*)' exists" do |_, code|
-  Token::Invitation.new(:code => code).save!
+  Token::BetaInvitation.new(:code => code).save!
 end
 
 Given "there is no invitation token with code: '(.*)'" do |code|
-  Token::Invitation.find_by_code(code).destroy! rescue nil
+  Token::BetaInvitation.find_by_code(code).destroy! rescue nil
 end
 
 Given "a customer with $attributes exists" do |attributes|

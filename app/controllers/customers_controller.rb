@@ -9,6 +9,10 @@ class CustomersController < ApplicationController
     get_params = nil if get_params == {}
 
     @customer_signup = CustomerSignup.new(params[:customer_signup] || get_params)
+
+    if Token::BetaInvitation.find_by_code(session[:token_code]).valid_token?
+      @customer_signup.invitation_code ||= session[:token_code]
+    end
     return unless request.post?
 
     if @customer_signup.valid? then

@@ -11,7 +11,7 @@ class CustomerSignup < ActiveRecord::BaseWithoutTable
     user = User.find_by_email email
     if not user
       user = User.new(:email => email)
-      if not user.valid? and user.errors[:email] then
+      if !user.valid? && user.errors[:email]
         user.errors[:email].each do |error|
           errors.add :email, error
         end 
@@ -19,14 +19,14 @@ class CustomerSignup < ActiveRecord::BaseWithoutTable
     end
 
     customer = Customer.new(:subdomain => subdomain)
-    if not customer.valid? and customer.errors[:subdomain] then
+    if !customer.valid? && customer.errors[:subdomain]
       customer.errors[:subdomain].each do |error|
         errors.add :subdomain, error
       end
     end
 
-    token = Token::Invitation.find_by_code(invitation_code)
-    if not token.valid_for?(customer, user) then
+    token = Token::BetaInvitation.find_by_code(invitation_code)
+    unless token.valid_token?
       token.errors.on_base.each do |error|
         errors.add :invitation_code, error
       end

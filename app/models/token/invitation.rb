@@ -9,7 +9,8 @@ module Token
     end
 
     def valid_for?(customer, user)
-      if param && (param[:subdomain] && !param[:subdomain] == customer.subdomain || param[:email] && !param[:email] == user.email)
+      if param && ((param[:subdomain] && param[:subdomain] != customer.subdomain) ||
+                   (param[:email]     && param[:email]     != user.email))
         errors.add_to_base "is restricted"
         false
       else

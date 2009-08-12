@@ -9,7 +9,7 @@ class TokensController < ApplicationController
       if redirect_target.nil?
         flash[:error] = "Sorry, we couldn't handle the token #{params[:code]}."
       else
-        session[:token_code] = @token.code
+        session[:token_code] = @token.code if @token.store_in_session?
         return redirect_to(redirect_target) # success
       end
 

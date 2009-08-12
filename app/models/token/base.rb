@@ -83,7 +83,7 @@ module Token
 
       token = self.new
       def token.valid_token?
-        errors.add_to_base "Sorry, we could not recognise this invitation code."
+        errors.add_to_base "Sorry, we could not recognise this code."
         false
       end
 
@@ -102,6 +102,11 @@ module Token
       token = self.new
       token.code = make_token
       token
+    end
+
+    # Override in subclasses if the token code should be remembered in the user's session.
+    def store_in_session?
+      false
     end
   end
 end
