@@ -8,13 +8,12 @@ class UsersController < ApplicationController
   # it is step two of the action that started by finding the subdomain, email and invitation code in 
   # customers/new (/signup)
   def new
-
-    if !(request.post? || (current_subdomain && params[:email] && params[:invitation_code]))
+    if !(request.post? || (current_subdomain && params[:invitation_code]))
       redirect_to :subdomain => false, :controller => "customers", :action => "new"
     end
     
     # Do we have an existing user?
-    @user = User.find_by_email((params[:email] || params[:user][:email] || '').downcase)
+    @user = User.find_by_email((params[:email] || (params[:user] && params[:user][:email]) || '').downcase)
     if @user
       @new_user = false
 
@@ -27,21 +26,10 @@ class UsersController < ApplicationController
       @new_user = true
 
       @user = User.new(params[:user])
-      @user.email ||= params[:email]
       if params[:user]
         @user.password = params[:user][:password]
         @user.password_confirmation = params[:user][:password_confirmation]
       end
-
-      # Can only happen if someone is mucking around
-      if !@user.valid? && @user.errors[:email]
-        flash[:error] = "Email address " + @user.errors[:email]
-        redirect_to :subdomain => false, :controller => "customers", :action => "new"
-        return
-      end
-
-      # Error messages only on posting the form
-      @user.errors.clear if !request.post?
     end
 
     @customer = Customer.new(params[:customer])
@@ -56,6 +44,7 @@ class UsersController < ApplicationController
 
     if !request.post?
       @customer.errors.clear
+      @user.errors.clear
       return
     end
 

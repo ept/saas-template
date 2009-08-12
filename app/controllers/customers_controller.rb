@@ -5,7 +5,7 @@ class CustomersController < ApplicationController
 
   def new
     get_params = {}
-    ['email', 'invitation_code', 'subdomain'].each{|param| get_params[param] = params[param] if params[param] }
+    ['invitation_code', 'subdomain'].each{|param| get_params[param] = params[param] if params[param] }
     get_params = nil if get_params == {}
 
     @customer_signup = CustomerSignup.new(params[:customer_signup] || get_params)
@@ -16,7 +16,7 @@ class CustomersController < ApplicationController
     return unless request.post?
 
     if @customer_signup.valid? then
-      redirect_to :subdomain => @customer_signup.subdomain, :controller => :users, :action => :new, :invitation_code => @customer_signup.invitation_code, :email => @customer_signup.email
+      redirect_to :subdomain => @customer_signup.subdomain, :controller => :users, :action => :new, :invitation_code => @customer_signup.invitation_code
     end
   end
 

@@ -12,7 +12,7 @@ Story: New customer signup
     When he goes to /signup
     Then he should be at the 'customers/new' page
     And the page should look AWESOME
-    And he should see a <form> containing a textfield: 'Choose your URL', textfield: 'Your email address', textfield: 'Invitation code', submit: 'Sign up for free'
+    And he should see a <form> containing a textfield: 'Choose your URL', textfield: 'Invitation code', submit: 'Sign up for free'
 
   Scenario: New user can create a customer
     Given an anonymous user
@@ -21,12 +21,12 @@ Story: New customer signup
     And an invitation token with code: 'ab48d' exists
     When he goes to /signup
     And he enters 'blah' as subdomain
-    And he enters 'newuser@example.com' as email
     And he enters 'ab48d' as invitation code
     And he clicks submit
     Then he should be on subdomain blah at 'users/new'
-    Then he should see a <form> containing a textfield: 'Your name (optional)', password: 'Your new password', password: 'Confirm your password', textfield: 'Company name (optional)', submit: 'Set up account'
-    When he enters 'asdfasdf' as password
+    Then he should see a <form> containing a textfield: 'Your email address', password: 'Your new password', password: 'Confirm your password', textfield: 'Company name (optional)', submit: 'Set up account'
+    When he enters 'newuser@example.com' as email
+    And he enters 'asdfasdf' as password
     And he enters 'asdfasdf' as password_confirmation
     And he clicks submit
     Then he should be on subdomain blah at 'welcome'
@@ -39,10 +39,10 @@ Story: New customer signup
     And an invitation token with code: 'ab48d' exists
     When she goes to /signup
     And she enters 'blah' as subdomain
-    And she enters 'user@example.com' as email
     And she enters 'ab48d' as invitation code
     And she clicks submit
     Then she should be on subdomain blah at 'users/new'
+    When she enters 'user@example.com' as email
     And she enters 'asdfasdf' as password
     And she clicks submit
     Then user@example.com should be logged in
@@ -54,7 +54,6 @@ Story: New customer signup
     And an invitation token with code: 'ab48d' exists
     When he goes to /signup
     And he enters 'customer' as subdomain
-    And he enters 'newuser@example.com' as email
     And she enters 'ab48d' as invitation code
     And he clicks submit
     Then he should be at the 'customers/new' page
@@ -66,7 +65,6 @@ Story: New customer signup
     And there is no invitation token with code: 'ab48d'
     When he goes to /signup
     And he enters 'blah' as subdomain
-    And he enters 'newuser@example.com' as email
     And she enters 'ab48d' as invitation code
     And he clicks submit
     Then he should be at the 'customers/new' page
@@ -79,7 +77,6 @@ Story: New customer signup
     When he goes to /ab48d
     And he goes to /signup
     And he enters 'blah' as subdomain
-    And he enters 'me@example.com' as email
     And he clicks submit
     Then he should be on subdomain blah at 'users/new'
-    Then he should see a <form> containing a textfield: 'Your name (optional)', password: 'Your new password', password: 'Confirm your password', textfield: 'Company name (optional)', submit: 'Set up account'
+    Then he should see a <form> containing a textfield: 'Your email address', password: 'Your new password', password: 'Confirm your password', textfield: 'Company name (optional)', submit: 'Set up account'

@@ -17,9 +17,8 @@
   <%= error_messages_for :user, :customer, :token %>
 
   <table class="noborder">
-    <%= form_row fu, :name, "Your name (optional)" %>
-
     <% if @new_user then %>
+      <%= form_row fu, :email, "Your email address" %>
       <%= form_row fu, :password, "Your new password", :type => :password %>
       <%= form_row fu, :password_confirmation, "Confirm your password", :type => :password %>
     <% else %>
@@ -35,7 +34,7 @@
     <tr>
       <th></th>
       <td><%= fu.submit 'Set up account' %></td>
-      <td><%= fu.hidden_field :email, :value => @user.email %><input type="hidden" name="invitation_code" value="<%= params[:invitation_code] %>" /></td>
+      <td><input type="hidden" name="invitation_code" value="<%= h params[:invitation_code] %>" /></td>
     </tr>
   </table>
 
