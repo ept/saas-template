@@ -333,6 +333,31 @@ describe User do
     end
   end
 
+  describe '#password_reset_email!' do
+    before :each do
+      ActionMailer::Base.delivery_method = :test
+      ActionMailer::Base.perform_deliveries = true
+      ActionMailer::Base.deliveries = []
+    end
+
+    it 'should send out a password recovery email' do
+      users(:quentin).password_reset_email!
+
+      ActionMailer::Base.deliveries.size.should == 1
+      mail = ActionMailer::Base.deliveries[0]
+      mail.to.should include('quentin@example.com')
+      mail.body.should =~ /reset your password/
+      extract_token_code = /https?:\/\/#{Rails::configuration.domain_name}\/users\/password_reset\/(\w+)/
+      mail.body.should =~ extract_token_code
+
+      mail.body =~ extract_token_code
+      token = Token::PasswordReset.find_by_code $1
+      token.should_not be_nil
+      token.should be_a_valid_token
+      token.user.should == users(:quentin)
+    end
+  end
+
 protected
   def create_user(options = {})
     options = {:email => 'quire@example.com', :password => 'quire69', :password_confirmation => 'quire69' }.merge(options)
