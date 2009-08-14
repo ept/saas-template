@@ -34,6 +34,7 @@ class UsersController < ApplicationController
 
     @customer = Customer.new(params[:customer])
     @customer.subdomain = current_subdomain
+    @user.signup_customer = @customer
 
     # May happen on double-submission
     if !@customer.valid? && @customer.errors[:subdomain]
@@ -63,7 +64,6 @@ class UsersController < ApplicationController
           logout_keeping_session! if current_user
           self.current_user = @user 
 
-          flash[:notice] = "Done!"
           redirect_to :controller => "customers", :action => "welcome"
         end
       else
@@ -180,6 +180,7 @@ class UsersController < ApplicationController
           if @new_user
             # For some reason rails won't give this error
             @user.errors.add(:password, "can't be blank") if params[:user][:password] == ""
+            @user.email = params[:user][:email]
             @user.password = params[:user][:password]
             @user.password_confirmation = params[:user][:password_confirmation]
           end
@@ -190,8 +191,8 @@ class UsersController < ApplicationController
             CustomerUser.find(:first, :conditions => {:user_id => @user.id, :customer_id => @customer.id}).activate!
 
             self.current_user = @user
-            flash[:notice] = "Done!"
-            return redirect_to(:controller => "customers", :action => "welcome")
+            flash[:notice] = "Thanks and welcome to #{@customer.name}'s account!"
+            return redirect_to root_url(:subdomain => @customer.subdomain)
           end
         else
           flash[:error] = "Token " + @token.errors[:base]

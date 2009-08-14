@@ -6,7 +6,7 @@
   <table class="noborder">
     <tr>
       <th><%= f.label :subdomain, 'Choose your URL' %></th>
-      <td>http://<%= f.text_field :subdomain, :size => 20 %>.go-test.it/</td>
+      <td>http://<%= f.text_field :subdomain, :size => 20 %>.example.com/</td>
       <td><%= f.error_message_on :subdomain %></td>
     </tr>
     <%= form_row f, :invitation_code, "Invitation code" %>

@@ -1,3 +1,12 @@
-Please visit the url below in order to activate your account.
+Thank you for signing up to <%= Rails::configuration.domain_name %>!
 
-<%= token_url @token %>
+Please click the link below in order to verify your email address:
+<%= token_url @token, :subdomain => (@customer && @customer.subdomain || login_url_subdomain) %>
+
+<% if @customer -%>
+Your dedicated customer log-in page is at your chosen address:
+<%= root_url :subdomain => @customer.subdomain, :protocol => login_url_protocol %>
+<% end -%>
+
+If you did not sign up yourself, maybe somebody used your email address without your permission. <% -%>
+If that is the case, please reply to this email so that we can sort it out.

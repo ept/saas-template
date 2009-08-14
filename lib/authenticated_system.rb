@@ -84,10 +84,8 @@ module AuthenticatedSystem
       end
     end
 
-    # Redirect to the URI stored by the most recent store_location call or
-    # to the passed default.  Set an appropriately modified
-    #   after_filter :store_location, :only => [:index, :new, :show, :edit]
-    # for any controller you want to be bounce-backable.
+    # Redirect to the URI in the +return_to+ parameter, or to the passed default if no such parameter
+    # exists. Any +extra_options+ passed will be appended to the +return_to+ parameter's query string.
     def redirect_back_or_default(default, extra_options={})
       if params[:return_to].blank?
         redirect_to default

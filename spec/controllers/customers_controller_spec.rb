@@ -29,21 +29,21 @@ describe CustomersController do
       controller.should_receive(:current_customer).any_number_of_times.and_return(@ept)
       controller.should_receive(:current_user).any_number_of_times.and_return(@hasni)
       get :choose
-      response.should redirect_to("http://ept.test.host/welcome")
+      response.should redirect_to("http://ept.test.host/")
     end
 
     it "should choose the only possible customer" do
       controller.should_receive(:current_customer).any_number_of_times.and_return(nil)
       controller.should_receive(:current_user).any_number_of_times.and_return(@hasni)
       get :choose
-      response.should redirect_to("http://ept.test.host/welcome")
+      response.should redirect_to("http://ept.test.host/")
     end
 
     it "should not choose an unlinked current_customer" do
       controller.should_receive(:current_customer).any_number_of_times.and_return(@corpus)
       controller.should_receive(:current_user).any_number_of_times.and_return(@hasni)
       get :choose
-      response.should redirect_to("http://ept.test.host/welcome")
+      response.should redirect_to("http://ept.test.host/")
     end
 
     it "should redirect to new if there are no linked customers" do

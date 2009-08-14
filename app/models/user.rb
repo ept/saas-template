@@ -25,6 +25,9 @@ class User < ActiveRecord::Base
   # Only make non-critical attributes attr_accessible (which are ok to be edited by customer admins)
   attr_accessible :email, :name, :time_zone
 
+  # Temporary field for the user's customer, used during sign-up process
+  attr_accessor :signup_customer
+
   before_save :activate_when_password_set
 
   # Authenticates a user by their login name and unencrypted password.  Returns the user or nil,

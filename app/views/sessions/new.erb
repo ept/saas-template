@@ -16,5 +16,5 @@
 
 <p>
     <%= link_to 'Forgotten password?', forgotten_password_path %> |
-    <%= link_to 'Signup', signup_path %>
+    <%= link_to 'Signup', signup_url(:subdomain => login_url_subdomain, :protocol => login_url_protocol) %>
 </p>

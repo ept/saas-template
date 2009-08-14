@@ -4,21 +4,22 @@ class UserMailer < ActionMailer::Base
 
   def activation(user)
     setup_email(user)
+    @subject = 'Please confirm your email address'
     @body[:token] = Token::EmailValidation.new_for_user!(user)
-    @subject    = 'Please confirm your email address'
+    @body[:customer] = user.signup_customer
   end
 
   def invitation(customer, user)
     setup_email(user)
-    @body[:token] = Token::Invitation.new_for_customer_user!(customer, user)
     @subject = "#{customer.name} has invited you"
+    @body[:token] = Token::Invitation.new_for_customer_user!(customer, user)
     @body[:customer] = customer
   end
 
   def password_reset(user)
     setup_email user
-    @body[:token] = Token::PasswordReset.new_for_user!(user)
     @subject = "Reset your password"
+    @body[:token] = Token::PasswordReset.new_for_user!(user)
   end
   
   protected

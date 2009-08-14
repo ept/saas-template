@@ -28,7 +28,7 @@ describe MailingObserver do
       ActionMailer::Base.deliveries.size.should == 1
       mail = ActionMailer::Base.deliveries[0]
       mail.to.should include('asdf@asdf.com')
-      mail.body.should =~ /activate your account/
+      mail.body.should =~ /verify your email address/
       extract_token_code = /https?:\/\/#{Rails::configuration.domain_name}\/(\w+)/
       mail.body.should =~ extract_token_code
 

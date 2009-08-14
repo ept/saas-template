@@ -1,8 +1,15 @@
-Hi,
+You have been invited to join the <%= @customer.name %> team in using <%= Rails::configuration.domain_name %>.
 
-You have been invited to join the <%= @customer.name %> team.
-
+To accept your invitation, please click the following link:
 <%= token_url @token, :subdomain => @customer.subdomain %>
 
-Yours
-http://<%= Rails::configuration.domain_name %>
+<% if @user.passive? -%>
+You will be asked to create a password when you click this link. Once you have set your <% -%>
+password you can log in at your dedicated customer log-in page:
+<% else -%>
+Since you are already a user, you can continue using your existing password. <% -%>
+All you need to do is to log in via <%= @customer.name %>'s dedicated customer log-in page:
+<% end -%>
+<%= root_url :subdomain => @customer.subdomain, :protocol => login_url_protocol %>
+
+If you received this email in error, please ignore it.

@@ -118,14 +118,26 @@ by a controller called `AboutController`):
     map.connect ':controller/:action/:id.:format'
 
     # Map tokens to http://example.com/tokencode -- must be the last entry in routes.rb, after default routes
-    map.connect ':code', :controller => 'tokens', :action => 'show', :conditions => { :subdomain => nil }
-    map.connect ':code', :controller => 'tokens', :action => 'show', :conditions => { :subdomain => "example" }
+    map.connect ':code', :controller => 'tokens', :action => 'show'
 
 
-Edit `config/environments/development.rb` and `production.rb`, adding one line to each:
+Edit `config/environments/production.rb` and add:
 
-    ActionController::Base.session_options[:domain] = "example.local"   # development.rb
-    ActionController::Base.session_options[:domain] = "example.com"     # production.rb
+    # Set this to true if you want the login form to redirect to a https:// URL
+    config.https_login = false
+
+    # Set the base domain name under which our site is hosted
+    config.domain_name = 'example.com'
+
+
+Edit `config/environtments/development.rb` and add:
+
+    # Do not redirect to HTTPS URLs during development
+    config.https_login = false
+
+    # This name (and several subdomains of it) should be placed in your /etc/hosts, e.g:
+    # 127.0.0.1 example.local www.example.local foo.example.local bar.example.local
+    config.domain_name = 'example.local'
 
 
 On your development machine, edit `/etc/hosts` and add a line like:

@@ -3,7 +3,7 @@ class Customer < ActiveRecord::Base
 
   # Disallow some subdomains (our actual domain names must appear here too)
   def self.reserved_subdomains
-    %w( www wwww test dev staging ns1 ns2 localhost mail imap pop3 )
+    %w( www wwww test dev staging ns1 ns2 localhost mail imap pop3 secure login signup example )
   end
 
   has_many :customer_users
@@ -24,5 +24,4 @@ class Customer < ActiveRecord::Base
       write_attribute :name, val.capitalize
     end
   end
-
 end
