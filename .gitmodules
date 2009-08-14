@@ -10,3 +10,6 @@
 [submodule "vendor/plugins/custom-err-msg"]
 	path = vendor/plugins/custom-err-msg
 	url = git://github.com/gumayunov/custom-err-msg.git
+[submodule "vendor/plugins/exception_notification"]
+	path = vendor/plugins/exception_notification
+	url = git://github.com/rails/exception_notification.git

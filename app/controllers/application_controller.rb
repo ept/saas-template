@@ -2,6 +2,7 @@
 # Likewise, all the methods added will be available for all controllers.
 
 class ApplicationController < ActionController::Base
+  include ExceptionNotifiable
   include AuthenticatedSystem
   include CustomerDomains
   helper :all # include all helpers, all the time

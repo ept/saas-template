@@ -49,6 +49,9 @@ Add the following to `config/environments/test.rb`:
 
 Add the following to `config/environments/production.rb`:
 
+    # People to pester if an unhandled exception occurs
+    ExceptionNotifier.exception_recipients = %w(admin@example.com)
+
     # Set this to true if you want the login form to redirect to a https:// URL
     config.https_login = false
 
