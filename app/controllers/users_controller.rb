@@ -18,14 +18,14 @@ class UsersController < ApplicationController
       @new_user = false
 
       if request.post?
-        if !@user.authenticated?(params[:user][:password])
-          @user.errors.add :password, "Incorrect password"
-        end
+        @logged_in = @user.authenticated?(params[:user][:password])
+        @user.errors.add :password, "Incorrect password" unless @logged_in
       end
     else
       @new_user = true
 
       @user = User.new(params[:user])
+      @user.state = 'pending' # just for validation; set back to to passive before saving
       if params[:user]
         @user.password = params[:user][:password]
         @user.password_confirmation = params[:user][:password_confirmation]
@@ -43,7 +43,7 @@ class UsersController < ApplicationController
       return
     end
 
-    if !request.post?
+    unless request.post?
       @customer.errors.clear
       @user.errors.clear
       return
@@ -54,7 +54,17 @@ class UsersController < ApplicationController
 
     @token.transaction do
       if @token.valid_token?
-        if ((@new_user && @user.register!) || @user.authenticated?(params[:user][:password])) && @customer.save
+        user_valid = if @new_user
+          if @user.valid?
+            @user.state = 'passive'
+            @user.register!
+            true
+          end
+        else
+          @logged_in && @user.valid?
+        end
+
+        if user_valid && @customer.save
           link = CustomerUser.new(:customer => @customer, :user => @user)
           link.activate!
           link.grant_admin!
@@ -178,21 +188,19 @@ class UsersController < ApplicationController
       @token.transaction do
         if @token.valid_for?(@customer, @user) 
           if @new_user
-            # For some reason rails won't give this error
-            @user.errors.add(:password, "can't be blank") if params[:user][:password] == ""
-            @user.email = params[:user][:email]
+            @user.attributes = params[:user]
             @user.password = params[:user][:password]
             @user.password_confirmation = params[:user][:password_confirmation]
           end
 
-          if ((@new_user && @user.register!) || @user.authenticated?(params[:user][:password]))
+          if ((@new_user && @user.valid? && @user.register!) || @user.authenticated?(params[:user][:password]))
             @token.use!
             @user.activate! if @user.state == 'pending'
             CustomerUser.find(:first, :conditions => {:user_id => @user.id, :customer_id => @customer.id}).activate!
 
             self.current_user = @user
             flash[:notice] = "Thanks and welcome to #{@customer.name}'s account!"
-            return redirect_to root_url(:subdomain => @customer.subdomain)
+            return redirect_to(root_url(:subdomain => @customer.subdomain))
           end
         else
           flash[:error] = "Token " + @token.errors[:base]

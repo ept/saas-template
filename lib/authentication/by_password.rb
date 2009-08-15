@@ -8,10 +8,10 @@ module Authentication
         
         # Virtual attribute for the unencrypted password
         attr_accessor :password
-        validates_presence_of     :password,                   :if => :password_required?
-        validates_presence_of     :password_confirmation,      :if => :password_required?
-        validates_confirmation_of :password,                   :if => :password_required?
-        validates_length_of       :password, :within => 6..40, :if => :password_required?
+        validates_presence_of     :password,                   :if => :is_password_required
+        validates_presence_of     :password_confirmation,      :if => :is_password_required
+        validates_confirmation_of :password,                   :if => :is_password_required
+        validates_length_of       :password, :within => 6..40, :if => :is_password_required
         before_save :encrypt_password
       end
     end # #included directives
@@ -56,8 +56,8 @@ module Authentication
         self.salt = self.class.make_token if new_record?
         self.crypted_password = encrypt(password)
       end
-      def password_required?
-        crypted_password.blank? || !password.blank?
+      def is_password_required
+        (crypted_password.blank? || !password.blank?) && (pending? || active?)
       end
     end # instance methods
   end

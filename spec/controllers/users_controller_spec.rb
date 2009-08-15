@@ -14,7 +14,7 @@ describe UsersController do
 #      response.should redirect_to "http://test.host/signup"
 #    end
 
-    it "has probably been tested enough by features"
+    it "test corner cases not covered by features, e.g. attempting to create new customer from existing user with wrong password"
   end
   
   describe "when inviting a new user to join a customer" do

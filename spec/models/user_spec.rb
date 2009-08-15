@@ -48,6 +48,12 @@ describe User do
     end.should_not change(User, :count)
   end
 
+  it 'does not require a password for passive users' do
+    u = create_user(:password => nil)
+    u.state = 'passive'
+    u.should be_valid
+  end
+
   it 'requires email' do
     lambda do
       u = create_user(:email => nil)
