@@ -7,7 +7,7 @@ class Customer < ActiveRecord::Base
   end
 
   has_many :customer_users
-  has_many :users, :through => :customer_users
+  has_many :users, :through => :customer_users, :conditions => {'customer_users.state' => 'active'}
   has_many :projects
 
   # RFC 1035 excluding domains shorter than three characters

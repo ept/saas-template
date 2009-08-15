@@ -39,7 +39,7 @@ Given "'$email' is a user of (only one company|companies) with subdomains? $list
   subdomains.to_array_from_story.each do |subdomain|
     customer = Customer.new(:subdomain => subdomain)
     customer.save!
-    CustomerUser.new(:customer => customer, :user => user).save!
+    CustomerUser.new(:customer => customer, :user => user).activate!
   end
 end
 

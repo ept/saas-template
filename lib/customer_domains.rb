@@ -20,13 +20,13 @@ module CustomerDomains
     current_customer || access_denied
   end
 
+  def logged_in_as_current_customer?
+    current_customer && current_user && CustomerUser.linked?(current_customer, current_user)
+  end
+
   # before_filter :customer_login_required, checks for current_customer, current_user and a link between the two
   def customer_login_required
-    if current_customer && current_user && CustomerUser.linked?(current_customer, current_user)
-      true
-    else
-      access_denied
-    end
+    logged_in_as_current_customer? || access_denied
   end
 
   # before_filter :customer_admin_required, checks for current_customer, current_user, and a link with an "admin" flag between the two

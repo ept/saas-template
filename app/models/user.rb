@@ -87,12 +87,6 @@ class User < ActiveRecord::Base
     (other_user == self) || is_admin_for?(current_customer)
   end
 
-  # Allow a user in 'passive' role to be created without password. Useful for inviting people
-  # to join a customer.
-  def password_required?
-    !passive? && super
-  end
-
   # Avoid suspended/deleted users from getting entry by resetting their password
   def can_reset_password?
     passive? || pending? || active?
