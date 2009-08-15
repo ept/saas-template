@@ -2,9 +2,13 @@
 <% content_for :menu_item do %>signup<% end %>
 <% content_for :submenu_item do %>index<% end %>
 
-<h1>Confirm details</h1>
+<h1>Set up your account</h1>
 
-<% unless @new_user %>
+<% if @new_user %>
+    <p>Please set an email address and a password for your account (you will need your email
+        address to log in). <strong>We promise that we will keep your email address absolutely
+        confidential</strong> and never let spammers get their hands on it.</p>
+<% else %>
     <p>We already have an account with your email address on file. Please log in with
         your existing details so that you can access your new account with your existing
         password. You can
@@ -14,30 +18,56 @@
 
 <% form_for :user, @user do |fu| %>
 
-  <%= error_messages_for :user, :customer, :token %>
+<%= error_messages_for :user, :customer, :token %>
 
-  <table class="noborder">
-    <% if @new_user then %>
-      <%= form_row fu, :email, "Your email address" %>
-      <%= form_row fu, :password, "Your new password", :type => :password %>
-      <%= form_row fu, :password_confirmation, "Confirm your password", :type => :password %>
-    <% else %>
-      <%= form_row fu, :password, "Your current password", :type => :password %>
+<p>
+    <%= fu.label :email, "Your email address" %><br />
+    <%= fu.text_field :email %>
+    <%= fu.error_message_on :email %>
+</p>
+
+<% if @new_user then %>
+    <p>
+        <%= fu.label :password, "Your new password" %><br />
+        <%= fu.password_field :password %>
+        <%= fu.error_message_on :password %>
+    </p>
+    <p>
+        <%= fu.label :password_confirmation, "Confirm your password" %><br />
+        <%= fu.password_field :password_confirmation %>
+        <%= fu.error_message_on :password_confirmation %>
+    </p>
+<% else %>
+    <p>
+        <%= fu.label :password, "Your current password" %><br />
+        <%= fu.password_field :password %>
+        <%= fu.error_message_on :password %>
+    </p>
+<% end %>
+
+<% unless @existing_customer %>
+    <p>
+    <% fields_for :customer, @customer do |fc| %>
+        <%= fc.label :name, "Company name (optional)" %><br />
+        <%= fc.text_field :name %>
     <% end %>
+    </p>
+<% end %>
 
-    <% unless @existing_customer %>
-      <% fields_for :customer, @customer do |fc| %>
-        <%= form_row fc, :name, "Company name (optional)" %>
-      <% end %>
-    <% end %>
+<p>
+    <%= fu.check_box :marketing_opt_in %>
+    <%= fu.label :marketing_opt_in, 'Please send me occasional updates by email' %>
+</p>
+<p>
+    Very occasionally we would like to send you updates about things like new features
+    and special offers. Please tick the box if you would like to receive these emails.
+    We will never give your address to anybody else, and of course you can unsubscribe
+    at any time.
+</p>
 
-    <tr>
-      <th></th>
-      <td><%= fu.submit 'Set up account' %></td>
-      <td><input type="hidden" name="invitation_code" value="<%= h params[:invitation_code] %>" /></td>
-    </tr>
-  </table>
+<p><%= fu.submit 'Set up account' %></p>
 
+<input type="hidden" name="invitation_code" value="<%= h params[:invitation_code] %>" />
 <% end %>
 
 <% unless @new_user %>

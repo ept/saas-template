@@ -23,7 +23,7 @@ class User < ActiveRecord::Base
   validates_format_of       :email,    :with => Authentication.email_regex, :message => Authentication.bad_email_message
 
   # Only make non-critical attributes attr_accessible (which are ok to be edited by customer admins)
-  attr_accessible :email, :name, :time_zone
+  attr_accessible :email, :name, :time_zone, :marketing_opt_in
 
   # Temporary field for the user's customer, used during sign-up process
   attr_accessor :signup_customer

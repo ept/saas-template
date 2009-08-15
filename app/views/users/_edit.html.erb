@@ -7,10 +7,10 @@
 
         <% if user == current_user %>
             <tr>
-                <th><%= f.label :password, user.password_required? ? 'Set your password' : 'Change password' %></th>
+                <th><%= f.label :password, user.is_password_required ? 'Set your password' : 'Change password' %></th>
                 <td><%= f.password_field :password %></td>
                 <td>
-                    <% unless user.password_required? %>(leave blank to keep unchanged) <% end %>
+                    <% unless user.is_password_required %>(leave blank to keep unchanged) <% end %>
                     <%= f.error_message_on :subdomain %>
                 </td>
             </tr>
@@ -20,6 +20,14 @@
         <tr>
             <th><%= f.label :time_zone, 'Time zone' %></th>
             <td><%= f.time_zone_select :time_zone %></td>
+        </tr>
+
+        <tr>
+            <th></th>
+            <td>
+                <%= f.check_box :marketing_opt_in %>
+                <%= f.label :marketing_opt_in, 'Please send me occasional updates by email' %>
+            </td>
         </tr>
 
         <tr>
