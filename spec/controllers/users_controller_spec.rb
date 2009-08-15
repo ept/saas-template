@@ -22,6 +22,7 @@ describe UsersController do
       @widget = mock_model Customer, {:subdomain => "widget"}
       @current_user = mock_model User, {:email => 'current.user@example.com', :customers => [@widget]}
       @current_user.should_receive(:time_zone).any_number_of_times.and_return('London')
+      @current_user.should_receive(:email).any_number_of_times.and_return('current.user@example.com')
       @existing_user = mock_model User, {:email => 'existing.user@example.com', :customers => []}
       @existing_user.should_receive(:time_zone).any_number_of_times.and_return('London')
       @existing_user.should_receive(:save).any_number_of_times.and_return(true)
@@ -65,6 +66,7 @@ describe UsersController do
       @admin.should_receive(:is_admin_for?).any_number_of_times.and_return(true)
       @admin.should_receive(:can_edit_user?).any_number_of_times.and_return(true)
       @admin.should_receive(:time_zone).any_number_of_times.and_return('London')
+      @admin.should_receive(:email).any_number_of_times.and_return('admin@example.com')
 
       @user_role = mock_model CustomerUser
       @user = mock_model User
@@ -73,6 +75,7 @@ describe UsersController do
       @user.should_receive(:can_edit_user?).with(@user, @widget).any_number_of_times.and_return(true)
       @user.should_receive(:can_edit_user?).with(@admin, @widget).any_number_of_times.and_return(false)
       @user.should_receive(:time_zone).any_number_of_times.and_return('London')
+      @user.should_receive(:email).any_number_of_times.and_return('user@example.com')
 
       controller.should_receive(:customer_login_required).any_number_of_times.and_return(true)
       controller.should_receive(:current_customer).any_number_of_times.and_return(@widget)
