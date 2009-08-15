@@ -98,5 +98,73 @@ describe SessionsController do
       logged_in?.should_not be_true
     end
   end
-  
+
+  # Other AuthenticatedSystem methods
+  describe "#redirect_back_or_default" do
+    it 'should redirect to the default if no return_to parameter is given' do
+      should_receive(:params).at_least(:once).and_return({})
+      should_receive(:redirect_to).with('/foo')
+      redirect_back_or_default '/foo'
+    end
+
+    it 'should redirect to the return_to path' do
+      should_receive(:params).at_least(:once).and_return({:return_to => '/blah'})
+      request.should_receive(:host_with_port).at_least(:once).and_return('test.host')
+      should_receive(:redirect_to).with('http://test.host/blah')
+      redirect_back_or_default '/foo'
+    end
+
+    it 'should append extra parameters to the return_to path' do
+      should_receive(:params).at_least(:once).and_return({:return_to => '/blah'})
+      request.should_receive(:host_with_port).at_least(:once).and_return('test.host')
+      should_receive(:redirect_to).with('http://test.host/blah?cow=moo')
+      redirect_back_or_default '/foo', :cow => 'moo'
+    end
+
+    it 'should append extra parameters to the return_to path if return_to has existing query parameters' do
+      should_receive(:params).at_least(:once).and_return({:return_to => '/blah?sheep=baa'})
+      request.should_receive(:host_with_port).at_least(:once).and_return('test.host')
+      should_receive(:redirect_to).with('http://test.host/blah?sheep=baa&cow=moo')
+      redirect_back_or_default '/foo', :cow => 'moo'
+    end
+
+    it 'should apply the subdomain option to the return_to URL' do
+      should_receive(:params).at_least(:once).and_return({:return_to => '/blah'})
+      request.should_receive(:host_with_port).at_least(:once).and_return('test.host')
+      should_receive(:redirect_to).with('http://yippee.test.host/blah')
+      redirect_back_or_default '/foo', :subdomain => 'yippee'
+    end
+
+    it 'should apply the protocol option to the return_to URL' do
+      should_receive(:params).at_least(:once).and_return({:return_to => '/blah'})
+      request.should_receive(:host_with_port).at_least(:once).and_return('secure.test.host')
+      should_receive(:redirect_to).with('https://secure.test.host/blah')
+      redirect_back_or_default '/foo', :protocol => 'https'
+    end
+
+    it 'should preserve the current port number' do
+      should_receive(:params).at_least(:once).and_return({:return_to => '/blah'})
+      request.should_receive(:host_with_port).at_least(:once).and_return('test.host:3000')
+      should_receive(:redirect_to).with('http://badger.test.host:3000/blah')
+      redirect_back_or_default '/foo', :subdomain => 'badger'
+    end
+
+    it 'should preserve the current protocol' do
+      should_receive(:params).at_least(:once).and_return({:return_to => '/blah'})
+      request.should_receive(:host_with_port).at_least(:once).and_return('secure.example.com:443')
+      request.should_receive(:protocol).at_least(:once).and_return('https')
+      should_receive(:redirect_to).with('https://secure.example.com:443/blah')
+      redirect_back_or_default '/foo'
+    end
+
+    describe 'with invalid return_to value' do
+      ["/hey\n/you", "http://www.google.com/", "../moo", "/hey what's this?"].each do |attempt|
+        it "should ignore #{attempt.inspect}" do
+          should_receive(:params).at_least(:once).and_return({:return_to => attempt})
+          should_receive(:redirect_to).with('/foo')
+          redirect_back_or_default '/foo'
+        end
+      end
+    end
+  end
 end

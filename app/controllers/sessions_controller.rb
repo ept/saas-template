@@ -3,7 +3,9 @@ class SessionsController < ApplicationController
 
   # render new.rhtml
   def new
-    redirect_back_or_default '/' if logged_in?
+    if logged_in?
+      redirect_back_or_default(current_customer ? '/' : {:controller => 'customers', :action => 'choose'})
+    end
   end
 
   def create

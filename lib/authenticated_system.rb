@@ -86,30 +86,23 @@ module AuthenticatedSystem
 
     # Redirect to the URI in the +return_to+ parameter, or to the passed default if no such parameter
     # exists. Any +extra_options+ passed will be appended to the +return_to+ parameter's query string.
+    # The +return_to+ value must start with a '/' contain only valid URL path characters, otherwise
+    # it will be ignored.
     def redirect_back_or_default(default, extra_options={})
-      if params[:return_to].blank?
+      if params[:return_to].blank? || !(/\A\/[\w!\$%&\(\)\*\+,\-\.\/:;<=>\?@\[\]\^\{\}\|~]+\Z/ =~ params[:return_to])
         redirect_to default
       else
-        url = safe_url(params[:return_to])
-        if extra_options.has_key? :subdomain
-          subdomain = extra_options[:subdomain]
-          extra_options.delete :subdomain
-        else
-          subdomain = current_subdomain
+        path = params[:return_to].dup
+        extra_options = extra_options.dup
+        host_options = {}
+        ActionController::UrlRewriter::RESERVED_OPTIONS.each do |option|
+          val = extra_options.delete(option)
+          host_options[option] = val unless val.blank?
         end
-        url << (url.include?('?') ? '&' : '?') + extra_options.to_query unless extra_options.blank?
-        if SubdomainFu.needs_rewrite?(subdomain, request.host) then
-          redirect_to "http://#{SubdomainFu.rewrite_host_for_subdomains(subdomain, request.host)}#{url}"
-        else
-          redirect_to url
-        end
-      end
-    end
+        path << (path.include?('?') ? '&' : '?') + extra_options.to_query unless extra_options.blank?
 
-    # Sanitises a URL (which must start with a '/') to make it safe to include as a header
-    # in a HTTP redirect response.
-    def safe_url(url)
-      (url =~ /^\/[\w!\$%&\(\)\*\+,\-\.\/:;<=>\?@\[\]\^\{\}\|~]+$/) ? url : '/'
+        redirect_to root_url(host_options).sub(/\/$/, path)
+      end
     end
 
     # Inclusion hook to make #current_user and #logged_in?
