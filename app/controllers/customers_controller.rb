@@ -39,7 +39,8 @@ class CustomersController < ApplicationController
     if current_customer and CustomerUser.linked?(current_customer, current_user) then
       redirect_back_or_default root_url(:subdomain => current_customer.subdomain), :subdomain => current_customer.subdomain
     elsif !@customers or @customers.count == 0 then
-      redirect_back_or_default({:action => "new", :subdomain => false}, {:subdomain => false})
+      logger.warn("Ouch! #{current_user} has no customers")
+      redirect_back_or_default(secure_subdomain(:action => "new"), secure_subdomain)
     elsif @customers.count == 1 then
       redirect_back_or_default root_url(:subdomain => @customers[0].subdomain), :subdomain => @customers[0].subdomain
     else

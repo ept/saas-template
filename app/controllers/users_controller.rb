@@ -9,7 +9,7 @@ class UsersController < ApplicationController
   # customers/new (/signup)
   def new
     if !(request.post? || (current_subdomain && params[:invitation_code]))
-      redirect_to :subdomain => false, :controller => "customers", :action => "new"
+      redirect_to secure_subdomain(:controller => "customers", :action => "new")
     end
     
     # Do we have an existing user?
@@ -39,7 +39,7 @@ class UsersController < ApplicationController
     # May happen on double-submission
     if !@customer.valid? && @customer.errors[:subdomain]
       flash[:error] = "Subdomain " + @customer.errors[:subdomain]
-      redirect_to :subdomain => false, :controller => "customers", :action => "new"
+      redirect_to secure_subdomain(:controller => "customers", :action => "new")
       return
     end
 
@@ -78,7 +78,7 @@ class UsersController < ApplicationController
         end
       else
         flash[:error] = "Token " + @token.errors_on_base
-        redirect_to :subdomain => false, :controller => "customers", :action => "new"
+        redirect_to secure_subdomain(:controller => "customers", :action => "new")
       end
     end
   end

@@ -1,24 +1,10 @@
 # Methods added to this helper will be available to all templates in the application.
 module ApplicationHelper
-
-  # Returns 'http' or 'https' depending on the setting in the environment
-  def login_url_protocol
-    Rails::configuration.https_login ? 'https' : 'http'
-  end
-
-  # When using a wildcard SSL certificate for *.example.com then requests to example.com
-  # cannot be authenticated. Therefore any SSL URLs which wouldn't otherwise have a
-  # subdomain should be directed to a special subdomain, e.g. secure.example.com.
-  def login_url_subdomain
-    Rails::configuration.https_login ? 'secure' : false
-  end
+  include SecureDomain
 
   # Returns the full URL for a token, for use in emails.
   def token_url(token, options={})
-    options = {
-      :protocol => login_url_protocol,
-      :subdomain => login_url_subdomain
-    }.merge(options.symbolize_keys)
+    options = secure_subdomain.merge(options.symbolize_keys)
     subdomain = options.delete(:subdomain)
 
     url = options.delete(:protocol) + '://'

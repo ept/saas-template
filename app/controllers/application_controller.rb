@@ -5,8 +5,10 @@ class ApplicationController < ActionController::Base
   include ExceptionNotifiable
   include AuthenticatedSystem
   include CustomerDomains
+  include SecureDomain
+
   helper :all # include all helpers, all the time
-  helper_method :current_customer
+  helper_method :current_customer, :login_url_protocol, :login_url_subdomain, :secure_subdomain, :no_subdomain
   protect_from_forgery # See ActionController::RequestForgeryProtection for details
 
   # Scrub sensitive parameters from your log

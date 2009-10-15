@@ -1,4 +1,4 @@
-# This controller handles the login/logout function of the site.  
+# This controller handles the login/logout function of the site.
 class SessionsController < ApplicationController
 
   # render new.rhtml
@@ -7,7 +7,7 @@ class SessionsController < ApplicationController
       if logged_in_as_current_customer?
         redirect_back_or_default root_url
       else
-        redirect_back_or_default :controller => 'customers', :action => 'choose', :subdomain => false
+        redirect_to secure_subdomain(:controller => 'customers', :action => 'choose', :return_to => params[:return_to])
       end
     end
   end
