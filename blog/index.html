@@ -1,0 +1,20 @@
+---
+title: Blog
+layout: index
+---
+
+{% for post in site.posts limit:5 %}
+    <h2 class="blog">
+        <a href="/blog{{ post.url }}">{{ post.title }}</a>
+        <span class="postDate">
+            {{ post.date | date_to_string }},
+            <a href="/blog{{ post.url }}#disqus_thread" class="postComments">Comments</a>
+        </span>
+    </h2>
+
+    <div>
+        {{ post.content }}
+    </div>
+
+    <p><a href="/blog/archive.html">Older posts...</a></p>
+{% endfor %}
