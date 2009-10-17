@@ -24,7 +24,7 @@ Story: New customer signup
     And he enters 'ab48d' as invitation code
     And he clicks submit
     Then he should be on subdomain blah at 'users/new'
-    Then he should see a <form> containing a textfield: 'Your email address', password: 'Your new password', password: 'Confirm your password', textfield: 'Company name (optional)', submit: 'Set up account'
+    Then he should see a <form> containing a textfield: 'Your email address', password: 'Your new password', password: 'Confirm your password', textfield: 'Company name', submit: 'Set up account'
     When he enters 'newuser@example.com' as email
     And he enters 'asdfasdf' as password
     And he enters 'asdfasdf' as password_confirmation
@@ -79,4 +79,4 @@ Story: New customer signup
     And he enters 'blah' as subdomain
     And he clicks submit
     Then he should be on subdomain blah at 'users/new'
-    Then he should see a <form> containing a textfield: 'Your email address', password: 'Your new password', password: 'Confirm your password', textfield: 'Company name (optional)', submit: 'Set up account'
+    Then he should see a <form> containing a textfield: 'Your email address', password: 'Your new password', password: 'Confirm your password', textfield: 'Company name', submit: 'Set up account'

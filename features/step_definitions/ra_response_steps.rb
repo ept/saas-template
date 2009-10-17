@@ -46,9 +46,10 @@ Then "$actor should see an? <$container> containing a $attributes" do |_, contai
   response.should have_tag(container) do
     attributes.each do |tag, label|
       case tag
-      when "textfield" then with_tag "input[type='text']";     with_tag("label", label)
-      when "password"  then with_tag "input[type='password']"; with_tag("label", label)
-      when "submit"    then with_tag "input[type='submit'][value='#{label}']"
+      when "textfield"   then with_tag "input[type='text']";     with_tag("label", label)
+      when "password"    then with_tag "input[type='password']"; with_tag("label", label)
+      when "radiobutton" then with_tag "input[type='radio']";    with_tag("label", label)
+      when "submit"      then with_tag "input[type='submit'][value='#{label}']"
       else with_tag tag, label
       end
     end
@@ -117,8 +118,8 @@ end
 
 Then /^s?he should see a validation error '(.*)'/ do |message|
   response.should have_tag(".formError", :text => message)
-
 end
+
 Then /^s?he should see an? (\w+) message '(.*)'$/ do |notice, message|
   response.should have_flash(notice, %r{#{message}})
 end

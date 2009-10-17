@@ -85,6 +85,10 @@ When "$actor selects (.*)" do |_, sel|
   select sel
 end
 
+When "$actor chooses (.*)" do |_, sel|
+  choose sel
+end
+
 #
 # Result
 #

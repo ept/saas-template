@@ -85,6 +85,7 @@ describe CustomersController do
 
     it "should pass parameters onto the model" do
       CustomerSignup.should_receive(:new).with(@params).and_return(@signup)
+      @signup.should_receive(:has_invitation).any_number_of_times.and_return(1)
       @signup.should_receive(:valid?).and_return(true)
       post :new, :customer_signup => @params
       # FIXME: persuade rspec to somehow understand routing...
@@ -93,6 +94,7 @@ describe CustomersController do
 
     it "should redisplay the page on error" do
       CustomerSignup.should_receive(:new).with(@params).and_return(@signup)
+      @signup.should_receive(:has_invitation).any_number_of_times.and_return(0)
       @signup.should_receive(:valid?).any_number_of_times.and_return(false)
       post :new, :customer_signup => @params
       response.should render_template("customers/new.erb")
