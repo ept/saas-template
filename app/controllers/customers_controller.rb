@@ -8,14 +8,11 @@ class CustomersController < ApplicationController
     ['invitation_code', 'subdomain'].each{|param| get_params[param] = params[param] if params[param] }
     get_params = nil if get_params == {}
 
-    @customer_signup = CustomerSignup.new(params[:customer_signup] || get_params)
+    @customer_signup = CustomerSignup.from_params_and_session(params[:customer_signup] || get_params, session)
 
-    if Token::BetaInvitation.find_by_code(session[:token_code]).valid_token?
-      @customer_signup.invitation_code ||= session[:token_code]
-    end
     return unless request.post?
 
-    if @customer_signup.valid? then
+    if @customer_signup.has_invitation == 1 && @customer_signup.valid?
       redirect_to :subdomain => @customer_signup.subdomain, :controller => :users, :action => :new, :invitation_code => @customer_signup.invitation_code
     end
   end

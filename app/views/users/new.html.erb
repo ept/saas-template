@@ -48,7 +48,7 @@
 <% unless @existing_customer %>
     <p>
     <% fields_for :customer, @customer do |fc| %>
-        <%= fc.label :name, "Company name (optional)" %><br />
+        <%= fc.label :name, "Company name" %><br />
         <%= fc.text_field :name %>
     <% end %>
     </p>
