@@ -9,6 +9,7 @@ class Customer < ActiveRecord::Base
   has_many :customer_users
   has_many :users, :through => :customer_users, :conditions => {'customer_users.state' => 'active'}
   has_many :projects
+  has_many :customer_addresses
 
   # RFC 1035 excluding domains shorter than three characters
   validates_presence_of :subdomain
