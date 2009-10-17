@@ -100,8 +100,7 @@ by a controller called `AboutController`):
     map.welcome  '/welcome',  :controller => 'customers', :action => 'dashboard'
     map.forgotten_password '/forgotten_password', :controller => 'users', :action => 'forgotten_password'
 
-    map.resources :users
-    #map.resources :users, :member => { :suspend => :put, :unsuspend => :put, :purge => :delete } # ???
+    map.resources :users, :member => {:impersonate => :any}
 
     map.resource :session
 

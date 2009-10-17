@@ -271,4 +271,11 @@ class UsersController < ApplicationController
       end
     end
   end
+
+  # If you're currently logged in as an admin of the site, you can go to /users/<id>/impersonate
+  # to temporarily see the site from that user's point of view.
+  def impersonate
+    self.current_user = User.find(params[:id]) if current_user.is_admin
+    redirect_to secure_subdomain(:controller => 'customers', :action => 'choose', :return_to => params[:return_to])
+  end
 end
