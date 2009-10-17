@@ -33,15 +33,20 @@ class CustomersController < ApplicationController
   # Presented to users when they log in, skips the dialogue if there's no choice
   def choose
     @customers = current_user.customers
-    if current_customer and CustomerUser.linked?(current_customer, current_user) then
+    if current_customer && CustomerUser.linked?(current_customer, current_user)
       redirect_back_or_default root_url(:subdomain => current_customer.subdomain), :subdomain => current_customer.subdomain
-    elsif !@customers or @customers.count == 0 then
-      logger.warn("Ouch! #{current_user} has no customers")
+    elsif !@customers || @customers.count == 0
+      logger.warn("Ouch! #{current_user.email} has no customers")
       redirect_back_or_default(secure_subdomain(:action => "new"), secure_subdomain)
-    elsif @customers.count == 1 then
-      redirect_back_or_default root_url(:subdomain => @customers[0].subdomain), :subdomain => @customers[0].subdomain
+    elsif @customers.count == 1
+      if !CustomerUser.linked?(@customers[0], current_user)
+        logout_keeping_session!
+        access_denied
+      else
+        redirect_back_or_default root_url(:subdomain => @customers[0].subdomain), :subdomain => @customers[0].subdomain
+      end
     else
-      #Render choice page
+      # Render choice page
     end
   end
 
