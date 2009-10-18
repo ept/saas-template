@@ -53,6 +53,12 @@ module AuthenticatedSystem
       authorized? || access_denied
     end
 
+    # Filter method which requires a site admin user to be logged in.
+    # Similar to login_required.
+    def admin_required
+      access_denied unless authorized? && current_user.is_admin
+    end
+
     # Redirect as appropriate when an access request fails.
     #
     # The default action is to redirect to the login screen.
