@@ -3,7 +3,9 @@ class SessionsController < ApplicationController
 
   # render new.rhtml
   def new
-    if logged_in?
+    if params[:admin_required]
+      redirect_back_or_default root_url if logged_in? && current_user.is_admin
+    elsif logged_in?
       if logged_in_as_current_customer?
         redirect_back_or_default root_url
       else

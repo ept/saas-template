@@ -56,7 +56,7 @@ module AuthenticatedSystem
     # Filter method which requires a site admin user to be logged in.
     # Similar to login_required.
     def admin_required
-      access_denied unless authorized? && current_user.is_admin
+      access_denied :admin_required => 1 unless authorized? && current_user.is_admin
     end
 
     # Redirect as appropriate when an access request fails.
@@ -67,7 +67,7 @@ module AuthenticatedSystem
     # behavior in case the user is not authorized
     # to access the requested action.  For example, a popup window might
     # simply close itself.
-    def access_denied
+    def access_denied(options={})
       respond_to do |format|
         format.html do
           if request.post?
@@ -77,6 +77,7 @@ module AuthenticatedSystem
             if Rails::configuration.https_login && request.protocol != 'https://'
               sign_in_link[:protocol] = 'https://'
             end
+            sign_in_link.merge!(options)
             redirect_to sign_in_link
           end
         end
