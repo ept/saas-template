@@ -21,7 +21,7 @@ module CustomerDomains
   end
 
   def logged_in_as_current_customer?
-    current_customer && current_user && CustomerUser.linked?(current_customer, current_user)
+    current_customer && current_user && (CustomerUser.linked?(current_customer, current_user) || current_user.is_admin)
   end
 
   # before_filter :customer_login_required, checks for current_customer, current_user and a link between the two
