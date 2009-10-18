@@ -29,7 +29,12 @@ Add the following to `config/environment.rb` just after the `require File.join(F
 and in the same file inside the `Rails::Initializer.run` block:
 
     config.gem "rubyist-aasm", :lib => 'aasm', :source => "http://gems.github.com"
+    config.gem "fastercsv"
     config.active_record.observers = :mailing_observer
+
+Add the following to `config/initializers/mime_types.rb`:
+
+    Mime::Type.register "text/csv", :csv
 
 Add the following to `config/environments/development.rb`:
 
@@ -99,6 +104,8 @@ by a controller called `AboutController`):
     map.signup   '/signup',   :controller => 'customers', :action => 'new'
     map.welcome  '/welcome',  :controller => 'customers', :action => 'dashboard'
     map.forgotten_password '/forgotten_password', :controller => 'users', :action => 'forgotten_password'
+
+    map.resources :customers, :collection => {:welcome => :any, :choose => :get}
 
     map.resources :users, :member => {:impersonate => :any}
 

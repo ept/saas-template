@@ -1,0 +1,26 @@
+<h1>Customers</h1>
+
+<form method="GET">
+    <p>
+        <input type="text" name="search" size="20" value="<%= h params[:search] %>" />
+        <input type="submit" name="btn" value="Search" />
+    </p>
+</form>
+
+<table>
+    <tr>
+        <th>Subdomain</th>
+        <th>Name</th>
+        <th>Signed up</th>
+    </tr>
+
+    <% for customer in @customers %>
+    <tr>
+        <td><%= link_to h(customer.subdomain), "/customers/#{customer.subdomain}" %></td>
+        <td><%= h customer.name %></td>
+        <td><%= h customer.created_at.strftime('%Y-%m-%d') %></td>
+    </tr>
+    <% end %>
+</table>
+
+<p><%= link_to 'Download CSV', :format => :csv, :search => params[:search] %></p>

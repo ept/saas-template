@@ -1,0 +1,14 @@
+<h1><%= h @customer.name %> (<%= h @customer.subdomain %>)</h1>
+
+<h2>Users</h2>
+
+<ul>
+    <% for user in @customer.users %>
+    <li>
+        <% if user.is_admin_for? @customer %><b><% end %>
+        <%= h user.name %> &lt;<a href="mailto:<%= h user.email %>"><%= h user.email %></a>&gt; &mdash;
+        <%= link_to 'Impersonate', impersonate_user_path(user, :subdomain => @customer.subdomain) %>
+        <% if user.is_admin_for? @customer %></b><% end %>
+    </li>
+    <% end %>
+</ul>

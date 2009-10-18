@@ -1,6 +1,8 @@
 class CustomersController < ApplicationController
 
-  before_filter :customer_login_required, :except => [:new, :choose]
+  admin_actions = [:index, :show]
+  before_filter :admin_required, :only => admin_actions
+  before_filter :customer_login_required, :except => [:new, :choose] + admin_actions
   before_filter :login_required, :only => :choose
 
   def new
@@ -48,6 +50,36 @@ class CustomersController < ApplicationController
     else
       # Render choice page
     end
+  end
+
+
+  ######## Admin stuff
+
+  def index
+    if params[:search]
+      @customers = Customer.all(:conditions => ["subdomain LIKE ? OR name LIKE ?", "%#{params[:search]}%", "%#{params[:search]}%"])
+    else
+      @customers = Customer.all
+    end
+
+    respond_to do |format|
+      format.html
+
+      format.csv do
+        send_data(FasterCSV.generate do |csv|
+          csv << ['Subdomain', 'Name', 'Signed Up']
+          @customers.each do |customer|
+            csv << [
+              customer.subdomain, customer.name, customer.created_at.strftime('%Y-%m-%d')
+            ]
+          end
+        end, :filename => 'customers.csv', :type => :csv, :disposition => 'inline')
+      end
+    end
+  end
+
+  def show
+    @customer = Customer.find_by_subdomain(params[:id]) or raise ActiveRecord::RecordNotFound
   end
 
 end
